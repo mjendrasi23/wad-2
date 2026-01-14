@@ -1,0 +1,17 @@
+<h1 class="page-title">Authors</h1>
+<p class="page-subtitle">Meet the people behind this demo, plus a few friendly placeholders.</p>
+
+<div class="grid">
+  @for (a of authors; track a.email) {
+    <mat-card class="card">
+      <mat-card-content class="card__content">
+        <div class="avatar" aria-hidden="true"></div>
+        <div>
+          <div class="name">{{ a.name }}</div>
+          <div class="role">{{ a.role }}</div>
+          <a class="email" [href]="'mailto:' + a.email">{{ a.email }}</a>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

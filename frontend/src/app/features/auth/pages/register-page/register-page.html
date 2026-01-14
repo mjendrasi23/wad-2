@@ -1,0 +1,70 @@
+<div class="wrap">
+  <mat-card class="card">
+    <mat-card-header>
+      <mat-card-title>Create account</mat-card-title>
+      <mat-card-subtitle>Join to save favorites, rate recipes, and share your own.</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      @if (!env.useMockApi) {
+        <div class="form-error" role="alert">
+          Registration is currently available only in Mock API mode.
+        </div>
+      }
+
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline">
+          <mat-label>Name</mat-label>
+          <input matInput type="text" formControlName="name" autocomplete="name" />
+          @if (form.controls.name.touched && form.controls.name.invalid) {
+            <mat-error>Name is required.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" autocomplete="email" />
+          @if (form.controls.email.touched && form.controls.email.invalid) {
+            <mat-error>
+              @if (form.controls.email.errors?.['required']) { Email is required. }
+              @if (form.controls.email.errors?.['email']) { Enter a valid email. }
+            </mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" formControlName="password" autocomplete="new-password" />
+          <mat-hint>Use at least 8 chars, upper/lowercase, number, and symbol.</mat-hint>
+          @if (form.controls.password.touched && form.controls.password.invalid) {
+            <mat-error>Choose a stronger password.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Confirm password</mat-label>
+          <input matInput type="password" formControlName="confirmPassword" autocomplete="new-password" />
+          @if (form.touched && form.errors?.['passwordMismatch']) {
+            <mat-error>Passwords do not match.</mat-error>
+          }
+        </mat-form-field>
+
+        @if (formError) {
+          <div class="form-error" role="alert">{{ formError }}</div>
+        }
+
+        <button mat-raised-button color="primary" type="submit" [disabled]="loading || !env.useMockApi">
+          @if (loading) {
+            <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
+          }
+          <span>Create account</span>
+        </button>
+
+        <div class="links">
+          <span>Already have an account?</span>
+          <a routerLink="/login">Sign in</a>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

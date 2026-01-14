@@ -1,0 +1,32 @@
+.header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.table-wrap {
+  margin-top: 12px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+}
+
+.name {
+  font: var(--mat-sys-title-small);
+}
+
+.desc {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+  margin-top: 2px;
+}
+
+.actions {
+  text-align: right;
+  white-space: nowrap;
+}

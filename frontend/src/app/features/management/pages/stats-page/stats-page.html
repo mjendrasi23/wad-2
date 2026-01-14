@@ -1,0 +1,32 @@
+<h1 class="page-title">Stats</h1>
+<p class="page-subtitle">Charts powered by `StatsApi` (computed from the mock database).</p>
+
+<div class="grid">
+  <mat-card class="card">
+    <mat-card-header>
+      <mat-card-title>Most Popular Categories</mat-card-title>
+      <mat-card-subtitle>By recipe count</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content class="chart">
+      @if (popularChart$ | async; as chart) {
+        <canvas baseChart [data]="chart.data" [options]="barOptions" [type]="chart.type"></canvas>
+      } @else {
+        <app-skeleton-cards [count]="1" variant="list"></app-skeleton-cards>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="card">
+    <mat-card-header>
+      <mat-card-title>Average Rating per Category</mat-card-title>
+      <mat-card-subtitle>From all ratings</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content class="chart">
+      @if (ratingChart$ | async; as chart) {
+        <canvas baseChart [data]="chart.data" [options]="barOptions" [type]="chart.type"></canvas>
+      } @else {
+        <app-skeleton-cards [count]="1" variant="list"></app-skeleton-cards>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

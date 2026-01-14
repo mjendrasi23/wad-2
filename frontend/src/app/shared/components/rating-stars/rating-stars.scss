@@ -1,0 +1,31 @@
+.stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.star {
+  appearance: none;
+  border: 0;
+  padding: 2px;
+  background: transparent;
+  color: var(--mat-sys-primary);
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.star[disabled] {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.star:focus-visible {
+  outline: 2px solid var(--mat-sys-primary);
+  outline-offset: 2px;
+}
+
+.value {
+  margin-left: 6px;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}

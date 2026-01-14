@@ -1,0 +1,16 @@
+<div class="grid" [class.grid--list]="variant === 'list'" aria-hidden="true">
+  @for (idx of items; track idx) {
+    <div class="card">
+      <div class="img shimmer"></div>
+      <div class="content">
+        <div class="line shimmer"></div>
+        <div class="line line--short shimmer"></div>
+        <div class="chips">
+          <span class="chip shimmer"></span>
+          <span class="chip shimmer"></span>
+          <span class="chip shimmer"></span>
+        </div>
+      </div>
+    </div>
+  }
+</div>

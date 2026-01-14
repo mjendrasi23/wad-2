@@ -1,0 +1,127 @@
+<div class="header">
+  <div>
+    <h1 class="page-title">{{ isEdit ? 'Edit recipe' : 'Create recipe' }}</h1>
+    <p class="page-subtitle">Repeatable ingredients/steps, tags, category, and image URL preview.</p>
+  </div>
+  @if (isEdit) {
+    <button mat-stroked-button color="warn" type="button" (click)="delete()">
+      <mat-icon>delete</mat-icon>
+      Delete
+    </button>
+  }
+</div>
+
+<form class="grid" [formGroup]="form" (ngSubmit)="submit()">
+  <mat-card class="panel">
+    <mat-card-header>
+      <mat-card-title>Basics</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="panel__content">
+      <mat-form-field appearance="outline">
+        <mat-label>Title</mat-label>
+        <input matInput formControlName="title" />
+        @if (form.controls.title.touched && form.controls.title.invalid) {
+          <mat-error>Title is required.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Description</mat-label>
+        <textarea matInput rows="4" formControlName="description"></textarea>
+        @if (form.controls.description.touched && form.controls.description.invalid) {
+          <mat-error>Description is required.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Category</mat-label>
+        <mat-select formControlName="categoryId">
+          @for (c of categories$ | async; track c.id) {
+            <mat-option [value]="c.id">{{ c.name }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.categoryId.touched && form.controls.categoryId.invalid) {
+          <mat-error>Category is required.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Tags</mat-label>
+        <input matInput formControlName="tags" placeholder="comma-separated" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Image URL</mat-label>
+        <input matInput formControlName="imageUrl" placeholder="https://…" />
+      </mat-form-field>
+
+      <mat-checkbox formControlName="isPublic">Public (guests can view)</mat-checkbox>
+
+      @if (form.controls.imageUrl.value) {
+        <div class="preview">
+          <img [src]="form.controls.imageUrl.value" alt="Recipe image preview" loading="lazy" />
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="panel">
+    <mat-card-header>
+      <mat-card-title>Ingredients</mat-card-title>
+      <span class="spacer"></span>
+      <button mat-button type="button" (click)="addIngredient()">
+        <mat-icon>add</mat-icon>
+        Add
+      </button>
+    </mat-card-header>
+    <mat-card-content class="panel__content">
+      <div class="rows">
+        @for (ctrl of ingredients.controls; track $index) {
+          <div class="row" [formGroup]="ctrl">
+            <mat-form-field appearance="outline" class="row__field">
+              <mat-label>Ingredient</mat-label>
+              <input matInput formControlName="text" />
+            </mat-form-field>
+            <button mat-icon-button type="button" aria-label="Remove ingredient" (click)="removeIngredient($index)">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="panel">
+    <mat-card-header>
+      <mat-card-title>Steps</mat-card-title>
+      <span class="spacer"></span>
+      <button mat-button type="button" (click)="addStep()">
+        <mat-icon>add</mat-icon>
+        Add
+      </button>
+    </mat-card-header>
+    <mat-card-content class="panel__content">
+      <div class="rows">
+        @for (ctrl of steps.controls; track $index) {
+          <div class="row">
+            <mat-form-field appearance="outline" class="row__field">
+              <mat-label>Step</mat-label>
+              <textarea matInput rows="2" [formControl]="ctrl"></textarea>
+            </mat-form-field>
+            <button mat-icon-button type="button" aria-label="Remove step" (click)="removeStep($index)">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="footer-actions">
+    <button mat-raised-button color="primary" type="submit" [disabled]="saving">
+      <mat-icon>save</mat-icon>
+      {{ saving ? 'Saving…' : 'Save recipe' }}
+    </button>
+    <a mat-button routerLink="/recipes">Cancel</a>
+  </div>
+</form>

@@ -1,0 +1,86 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.grid--list {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 959px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 599px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--mat-sys-surface);
+}
+
+.img {
+  height: 160px;
+  background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+}
+
+.content {
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.line {
+  height: 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mat-sys-on-surface) 10%, transparent);
+}
+
+.line--short {
+  width: 65%;
+}
+
+.chips {
+  display: flex;
+  gap: 8px;
+}
+
+.chip {
+  height: 22px;
+  width: 56px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mat-sys-on-surface) 10%, transparent);
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--mat-sys-on-surface) 10%, transparent),
+    transparent
+  );
+  animation: shimmer 1.2s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

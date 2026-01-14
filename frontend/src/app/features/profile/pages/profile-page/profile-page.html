@@ -1,0 +1,68 @@
+<h1 class="page-title">Profile</h1>
+<p class="page-subtitle">Account details, favorites preview, and demo settings.</p>
+
+@if (user$ | async; as user) {
+  <div class="grid">
+    <mat-card class="card">
+      <mat-card-header>
+        <mat-card-title>{{ user.name }}</mat-card-title>
+        <mat-card-subtitle>{{ user.email }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="row">
+          <span class="label">Role</span>
+          <span class="value">{{ user.role }}</span>
+        </div>
+        <div class="row">
+          <span class="label">Member since</span>
+          <span class="value">{{ user.createdAt | date: 'mediumDate' }}</span>
+        </div>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-button type="button" (click)="env.useMockApi ? resetDemoData() : null" [disabled]="!env.useMockApi">
+          Reset demo data
+        </button>
+        <button mat-button type="button" (click)="auth.logout()">
+          Logout
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card class="card">
+      <mat-card-header>
+        <mat-card-title>Favorites</mat-card-title>
+        <mat-card-subtitle>Quick preview</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        @if (favoritesPreview$ | async; as fav) {
+          @if (fav.total === 0) {
+            <app-empty-state
+              title="No favorites yet"
+              message="Browse recipes and save a few for later."
+              icon="favorite_border"
+              primaryActionLabel="Browse recipes"
+              primaryActionLink="/recipes"
+            ></app-empty-state>
+          } @else {
+            <div class="fav-list">
+              @for (r of fav.items; track r.id) {
+                <a class="fav" [routerLink]="['/recipes', r.id]">
+                  <img [src]="r.imageUrl" [alt]="r.title" />
+                  <div>
+                    <div class="fav__title">{{ r.title }}</div>
+                    <div class="fav__meta">{{ r.favoritesCount }} saves</div>
+                  </div>
+                </a>
+              }
+            </div>
+          }
+        }
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <a mat-button routerLink="/favorites">View all</a>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+} @else {
+  <app-empty-state title="Not signed in" message="Sign in to view your profile." icon="person" primaryActionLabel="Sign in" primaryActionLink="/login"></app-empty-state>
+}

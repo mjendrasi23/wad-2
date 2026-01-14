@@ -1,0 +1,47 @@
+<h1 class="page-title">Favorites</h1>
+<p class="page-subtitle">Your saved recipes, paged and ready for offline demo testing.</p>
+
+@if (vm$ | async; as vm) {
+  @if (vm.loading) {
+    <app-skeleton-cards [count]="12"></app-skeleton-cards>
+  } @else {
+    @if (!vm.result || vm.result.total === 0) {
+      <app-empty-state
+        title="No favorites yet"
+        message="Browse recipes and tap “Save” to add favorites."
+        icon="favorite_border"
+        primaryActionLabel="Browse recipes"
+        primaryActionLink="/recipes"
+      ></app-empty-state>
+    } @else {
+      <div class="results-bar">
+        <div class="results-bar__count">{{ vm.result.total }} saved</div>
+        <mat-paginator
+          [length]="vm.result.total"
+          [pageIndex]="vm.query.page - 1"
+          [pageSize]="vm.query.pageSize"
+          [pageSizeOptions]="[12, 24, 48]"
+          (page)="onPageChange($event.pageIndex, $event.pageSize)"
+        ></mat-paginator>
+      </div>
+
+      <div class="grid">
+        @for (r of vm.result.items; track r.id) {
+          <a class="card" [routerLink]="['/recipes', r.id]">
+            <mat-card>
+              <img mat-card-image [src]="r.imageUrl" [alt]="r.title" loading="lazy" />
+              <mat-card-content>
+                <div class="title">{{ r.title }}</div>
+                <div class="meta">
+                  <app-rating-stars [rating]="r.avgRating" [readonly]="true"></app-rating-stars>
+                  <span class="dot">•</span>
+                  <span>{{ r.favoritesCount }} saves</span>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </a>
+        }
+      </div>
+    }
+  }
+}

@@ -1,0 +1,61 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 959px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 599px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  border-radius: 16px;
+}
+
+.card__content {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--mat-sys-primary) 26%, transparent),
+    color-mix(in srgb, var(--mat-sys-tertiary) 26%, transparent)
+  );
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+
+.name {
+  font: var(--mat-sys-title-medium);
+}
+
+.role {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+  margin-top: 2px;
+}
+
+.email {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--mat-sys-primary);
+  text-decoration: none;
+}
+
+.email:hover {
+  text-decoration: underline;
+}

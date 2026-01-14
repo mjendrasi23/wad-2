@@ -1,0 +1,38 @@
+<h1 class="page-title">Report content</h1>
+<p class="page-subtitle">Help keep the community safe. Reports appear in the moderation queue.</p>
+
+<mat-card class="card">
+  <mat-card-content>
+    <div class="target">
+      <span class="label">Target</span>
+      <span class="value">{{ targetType }} • {{ targetId }}</span>
+    </div>
+
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+      <mat-form-field appearance="outline">
+        <mat-label>Reason</mat-label>
+        <mat-select formControlName="reason">
+          <mat-option value="Spam">Spam</mat-option>
+          <mat-option value="Inappropriate">Inappropriate</mat-option>
+          <mat-option value="Copyright">Copyright</mat-option>
+          <mat-option value="Harassment">Harassment</mat-option>
+          <mat-option value="Other">Other</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Details (optional)</mat-label>
+        <textarea matInput rows="4" formControlName="details"></textarea>
+      </mat-form-field>
+
+      @if (formError) {
+        <div class="form-error" role="alert">{{ formError }}</div>
+      }
+
+      <div class="actions">
+        <button mat-raised-button color="primary" type="submit" [disabled]="submitting">Submit report</button>
+        <button mat-button type="button" routerLink="/recipes">Cancel</button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

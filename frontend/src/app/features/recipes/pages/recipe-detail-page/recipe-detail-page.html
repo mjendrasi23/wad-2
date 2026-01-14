@@ -1,0 +1,201 @@
+@if (recipe$ | async; as recipe) {
+  <div class="hero">
+    <div class="hero__img" [style.backgroundImage]="'url(' + recipe.imageUrl + ')'"></div>
+    <div class="hero__content">
+      <div class="hero__top">
+        <div>
+          <h1 class="title">{{ recipe.title }}</h1>
+          <div class="meta">
+            @if (category$ | async; as cat) {
+              <span class="pill">{{ cat?.name ?? 'Category' }}</span>
+            }
+            <span class="pill">{{ recipe.views }} views</span>
+            <span class="pill">{{ recipe.favoritesCount }} saves</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          @if (canEdit$ | async) {
+            <a mat-stroked-button [routerLink]="['/recipes', recipe.id, 'edit']">
+              <mat-icon>edit</mat-icon>
+              Edit
+            </a>
+          }
+
+          @if (canInteract$ | async) {
+            <button mat-raised-button color="primary" type="button" (click)="toggleFavorite(recipe.id)">
+              <mat-icon>{{ (isFavorite$ | async) ? 'favorite' : 'favorite_border' }}</mat-icon>
+              {{ (isFavorite$ | async) ? 'Saved' : 'Save' }}
+            </button>
+          } @else {
+            <a mat-raised-button color="primary" routerLink="/login">
+              <mat-icon>login</mat-icon>
+              Sign in to save
+            </a>
+          }
+
+          <a
+            mat-button
+            routerLink="/reports/new"
+            [queryParams]="{ targetType: 'recipe', targetId: recipe.id }"
+          >
+            <mat-icon>flag</mat-icon>
+            Report
+          </a>
+        </div>
+      </div>
+
+      <p class="desc">{{ recipe.description }}</p>
+
+      <div class="tags">
+        @for (t of recipe.tags; track t) {
+          <span class="tag">{{ t }}</span>
+        }
+      </div>
+
+      @if (rating$ | async; as rating) {
+        <div class="ratings">
+          <div class="ratings__block">
+            <div class="ratings__label">Average</div>
+            <app-rating-stars [rating]="rating.avgRating" [readonly]="true"></app-rating-stars>
+            <div class="ratings__hint">{{ rating.count }} ratings</div>
+          </div>
+          @if (canInteract$ | async) {
+            <div class="ratings__block">
+              <div class="ratings__label">Your rating</div>
+              <app-rating-stars
+                [rating]="rating.myRating ?? 0"
+                [readonly]="true"
+              ></app-rating-stars>
+              <div class="ratings__hint">Rate when posting a comment</div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="content">
+    <mat-card class="panel">
+      <mat-card-header>
+        <mat-card-title>Ingredients</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <ul class="list">
+          @for (i of recipe.ingredients; track i.text) {
+            <li>{{ i.text }}</li>
+          }
+        </ul>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="panel">
+      <mat-card-header>
+        <mat-card-title>Steps</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <ol class="list">
+          @for (s of recipe.steps; track s) {
+            <li>{{ s }}</li>
+          }
+        </ol>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <mat-card class="panel" style="margin-top: 16px;">
+    <mat-card-header>
+      <mat-card-title>Comments</mat-card-title>
+      <mat-card-subtitle>Feedback and discussion</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      @if (canInteract$ | async) {
+        <form class="comment-form" [formGroup]="commentForm" (ngSubmit)="submitReview(recipe.id)">
+          <div class="review-rating">
+            <div class="review-rating__label">Your rating</div>
+            <app-rating-stars
+              [rating]="selectedRating"
+              [readonly]="false"
+              (rated)="onReviewRate($event)"
+            ></app-rating-stars>
+            @if (ratingTouched && selectedRating <= 0) {
+              <div class="review-rating__error">Rating is required.</div>
+            }
+          </div>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Add a comment</mat-label>
+            <textarea matInput rows="3" formControlName="body"></textarea>
+            @if (commentForm.controls.body.touched && commentForm.controls.body.invalid) {
+              <mat-error>Comment is required.</mat-error>
+            }
+          </mat-form-field>
+          <button mat-raised-button color="primary" type="submit" [disabled]="reviewSubmitting">
+            Post
+          </button>
+        </form>
+      } @else {
+        <div class="cta">
+          <mat-icon>chat_bubble_outline</mat-icon>
+          <span>Sign in to comment.</span>
+          <a mat-button routerLink="/login">Sign in</a>
+        </div>
+      }
+
+      <mat-divider style="margin: 16px 0;"></mat-divider>
+
+      @if (commentsVm$ | async; as c) {
+        @if (c.loading) {
+          <app-skeleton-cards [count]="3" variant="list"></app-skeleton-cards>
+        } @else {
+          @if (!c.comments.length) {
+            <app-empty-state title="No comments yet" message="Be the first to share feedback." icon="chat"></app-empty-state>
+          } @else {
+            <div class="comments">
+              @for (cm of c.comments; track cm.id) {
+                <div class="comment">
+                  <div class="comment__meta">
+                    <span class="comment__author">User {{ cm.authorId }}</span>
+                    @if (cm.authorRating) {
+                      <span class="comment__rating">
+                        <app-rating-stars
+                          [rating]="cm.authorRating"
+                          [readonly]="true"
+                          [label]="'User rating'"
+                          [showValue]="false"
+                        ></app-rating-stars>
+                      </span>
+                    }
+                    <span class="dot">•</span>
+                    <span>{{ cm.createdAt | date: 'medium' }}</span>
+                    <span class="spacer"></span>
+                    @if (canInteract$ | async) {
+                      <a
+                        mat-button
+                        routerLink="/reports/new"
+                        [queryParams]="{ targetType: 'comment', targetId: cm.id }"
+                      >
+                        Report
+                      </a>
+                    }
+                    @if (canRemoveComment(cm, recipe.authorId)) {
+                      <button mat-icon-button type="button" aria-label="Remove comment" (click)="removeComment(cm)">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    }
+                  </div>
+                  <div class="comment__body" [class.comment__body--removed]="cm.status === 'removed'">
+                    {{ cm.status === 'removed' ? 'Removed by moderation.' : cm.body }}
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        }
+      }
+    </mat-card-content>
+  </mat-card>
+} @else {
+  <app-skeleton-cards [count]="1" variant="list"></app-skeleton-cards>
+}

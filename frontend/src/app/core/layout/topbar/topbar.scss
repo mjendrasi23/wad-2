@@ -1,0 +1,39 @@
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.brand mat-icon {
+  margin-right: 8px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.nav {
+  display: flex;
+  gap: 4px;
+}
+
+@media (max-width: 599px) {
+  .nav {
+    display: none;
+  }
+}
+
+.menu-section-title {
+  opacity: 0.8;
+  font: var(--mat-sys-label-large);
+}
+
+.menu-hint {
+  margin-left: auto;
+  opacity: 0.8;
+}

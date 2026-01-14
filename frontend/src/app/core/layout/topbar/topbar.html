@@ -1,0 +1,146 @@
+<mat-toolbar class="topbar" color="primary">
+  <a mat-button class="brand" routerLink="/" aria-label="RecipeNet home">
+    <mat-icon aria-hidden="true">restaurant</mat-icon>
+    <span>RecipeNet</span>
+  </a>
+
+  <span class="spacer"></span>
+
+  <nav class="nav" aria-label="Primary">
+    <button mat-button type="button" [matMenuTriggerFor]="categoriesMenu">
+      <mat-icon aria-hidden="true">category</mat-icon>
+      Categories
+      <mat-icon aria-hidden="true">expand_more</mat-icon>
+    </button>
+    <a mat-button routerLink="/recipes">Recipes</a>
+    <a mat-button routerLink="/authors">Authors</a>
+    <a mat-button routerLink="/docs">Docs</a>
+    @if (auth.user$ | async; as user) {
+      @if (user.role === 'explorer' || user.role === 'creator') {
+        <a mat-button routerLink="/favorites">Favorites</a>
+      }
+      @if (user.role === 'creator') {
+        <a mat-button routerLink="/my-recipes">My recipes</a>
+      }
+      @if (user.role === 'manager' || user.role === 'admin') {
+        <button mat-button type="button" [matMenuTriggerFor]="mgmtMenu">Management</button>
+      }
+      @if (user.role === 'admin') {
+        <button mat-button type="button" [matMenuTriggerFor]="adminMenu">Admin</button>
+      }
+    }
+  </nav>
+
+  @if (!(auth.user$ | async)) {
+    <a mat-button routerLink="/login">Login</a>
+  }
+
+  <button mat-icon-button type="button" aria-label="Account menu" [matMenuTriggerFor]="accountMenu">
+    <mat-icon>account_circle</mat-icon>
+  </button>
+</mat-toolbar>
+
+<mat-menu #accountMenu="matMenu">
+  @if (auth.user$ | async; as user) {
+    <button mat-menu-item routerLink="/profile">
+      <mat-icon>person</mat-icon>
+      <span>Profile</span>
+    </button>
+    <button mat-menu-item (click)="auth.logout()">
+      <mat-icon>logout</mat-icon>
+      <span>Logout</span>
+    </button>
+
+    @if (devTools.enabled) {
+      <mat-divider></mat-divider>
+      <button class="menu-section-title" mat-menu-item disabled>
+        <mat-icon>code</mat-icon>
+        <span>Dev tools</span>
+      </button>
+      <button mat-menu-item (click)="devTools.toggleSimulateErrors()">
+        <mat-icon>bug_report</mat-icon>
+        <span>Simulate errors</span>
+        <span class="menu-hint">{{ (devTools.simulateErrors$ | async) ? 'On' : 'Off' }}</span>
+      </button>
+      <button mat-menu-item [matMenuTriggerFor]="roleMenu">
+        <mat-icon>switch_account</mat-icon>
+        <span>Role switcher</span>
+      </button>
+    }
+  } @else {
+    <button mat-menu-item routerLink="/login">
+      <mat-icon>login</mat-icon>
+      <span>Login</span>
+    </button>
+    <button mat-menu-item routerLink="/register">
+      <mat-icon>person_add</mat-icon>
+      <span>Register</span>
+    </button>
+
+    @if (devTools.enabled) {
+      <mat-divider></mat-divider>
+      <button class="menu-section-title" mat-menu-item disabled>
+        <mat-icon>code</mat-icon>
+        <span>Dev tools</span>
+      </button>
+      <button mat-menu-item (click)="devTools.toggleSimulateErrors()">
+        <mat-icon>bug_report</mat-icon>
+        <span>Simulate errors</span>
+        <span class="menu-hint">{{ (devTools.simulateErrors$ | async) ? 'On' : 'Off' }}</span>
+      </button>
+      <button mat-menu-item [matMenuTriggerFor]="roleMenu">
+        <mat-icon>switch_account</mat-icon>
+        <span>Role switcher</span>
+      </button>
+    }
+  }
+</mat-menu>
+
+<mat-menu #mgmtMenu="matMenu">
+  <button mat-menu-item routerLink="/management/categories">
+    <mat-icon>category</mat-icon>
+    <span>Categories</span>
+  </button>
+  <button mat-menu-item routerLink="/management/moderation">
+    <mat-icon>gavel</mat-icon>
+    <span>Moderation</span>
+  </button>
+  <button mat-menu-item routerLink="/management/stats">
+    <mat-icon>insights</mat-icon>
+    <span>Stats</span>
+  </button>
+</mat-menu>
+
+<mat-menu #adminMenu="matMenu">
+  <button mat-menu-item routerLink="/admin/users">
+    <mat-icon>group</mat-icon>
+    <span>Users</span>
+  </button>
+</mat-menu>
+
+<mat-menu #roleMenu="matMenu">
+  @for (r of roles; track r) {
+    <button mat-menu-item (click)="auth.devSwitchRole(r).subscribe()">
+      <mat-icon>{{ r === 'guest' ? 'person_outline' : 'verified_user' }}</mat-icon>
+      <span>{{ r === 'guest' ? 'Guest' : r }}</span>
+    </button>
+  }
+</mat-menu>
+
+<mat-menu #categoriesMenu="matMenu">
+  <button mat-menu-item [routerLink]="['/recipes']" [queryParams]="{}">
+    <mat-icon>restaurant_menu</mat-icon>
+    <span>All recipes</span>
+  </button>
+  <mat-divider></mat-divider>
+
+  @if (categories$ | async; as categories) {
+    @for (c of categories; track c.id) {
+      <button mat-menu-item [routerLink]="['/recipes']" [queryParams]="{ categoryId: c.id }">
+        <span>{{ c.name }}</span>
+      </button>
+    }
+  } @else {
+    <button mat-menu-item disabled>Loading categories…</button>
+  }
+</mat-menu>

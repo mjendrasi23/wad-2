@@ -1,0 +1,36 @@
+.drawer {
+  width: min(420px, 88vw);
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.drawer__header {
+  padding: 12px 12px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.drawer__title {
+  font: var(--mat-sys-title-medium);
+}
+
+.drawer__body {
+  padding: 12px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+
+.label {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.value {
+  font-weight: 500;
+}

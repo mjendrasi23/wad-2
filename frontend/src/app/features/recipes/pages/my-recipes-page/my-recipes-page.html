@@ -1,0 +1,84 @@
+<div class="header">
+  <div>
+    <h1 class="page-title">My recipes</h1>
+    <p class="page-subtitle">Create, edit, and manage your recipes with server-side paging.</p>
+  </div>
+  <a mat-raised-button color="primary" routerLink="/recipes/new">
+    <mat-icon>add</mat-icon>
+    New recipe
+  </a>
+</div>
+
+<mat-card class="filters">
+  <mat-card-content>
+    <form class="filters__grid" [formGroup]="form">
+      <mat-form-field appearance="outline">
+        <mat-label>Search</mat-label>
+        <input matInput formControlName="textSearch" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Sort</mat-label>
+        <mat-select formControlName="sortBy">
+          <mat-option value="newest">Newest</mat-option>
+          <mat-option value="rating">Rating</mat-option>
+          <mat-option value="popularity">Popularity</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Direction</mat-label>
+        <mat-select formControlName="sortDir">
+          <mat-option value="desc">Desc</mat-option>
+          <mat-option value="asc">Asc</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </form>
+  </mat-card-content>
+</mat-card>
+
+@if (vm$ | async; as vm) {
+  @if (vm.loading) {
+    <app-skeleton-cards [count]="12"></app-skeleton-cards>
+  } @else {
+    @if (!vm.result || vm.result.total === 0) {
+      <app-empty-state
+        title="No recipes yet"
+        message="Create your first recipe to start collecting feedback."
+        icon="post_add"
+        primaryActionLabel="Create recipe"
+        primaryActionLink="/recipes/new"
+      ></app-empty-state>
+    } @else {
+      <div class="results-bar">
+        <div class="results-bar__count">{{ vm.result.total }} recipes</div>
+        <mat-paginator
+          [length]="vm.result.total"
+          [pageIndex]="vm.query.page - 1"
+          [pageSize]="vm.query.pageSize"
+          [pageSizeOptions]="[12, 24, 48]"
+          (page)="onPageChange($event.pageIndex, $event.pageSize)"
+        ></mat-paginator>
+      </div>
+
+      <div class="grid">
+        @for (r of vm.result.items; track r.id) {
+          <mat-card class="card">
+            <img mat-card-image [src]="r.imageUrl" [alt]="r.title" loading="lazy" />
+            <mat-card-content>
+              <div class="title">{{ r.title }}</div>
+              <div class="meta">
+                <app-rating-stars [rating]="r.avgRating" [readonly]="true"></app-rating-stars>
+                <span class="dot">•</span>
+                <span>{{ r.views }} views</span>
+              </div>
+            </mat-card-content>
+            <mat-card-actions align="end">
+              <a mat-button [routerLink]="['/recipes', r.id]">View</a>
+              <a mat-button [routerLink]="['/recipes', r.id, 'edit']">Edit</a>
+              <button mat-button color="warn" type="button" (click)="deleteRecipe(r.id)">Delete</button>
+            </mat-card-actions>
+          </mat-card>
+        }
+      </div>
+    }
+  }
+}

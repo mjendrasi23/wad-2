@@ -1,0 +1,20 @@
+<div class="stars" role="radiogroup" [attr.aria-label]="label">
+  @for (s of stars(); track s) {
+    <button
+      type="button"
+      class="star"
+      [disabled]="readonly"
+      [attr.aria-label]="s + ' out of ' + max"
+      [attr.aria-checked]="s === Math.round(rating)"
+      role="radio"
+      (click)="onRate(s)"
+    >
+      <mat-icon aria-hidden="true">
+        {{ s <= rating ? 'star' : 'star_outline' }}
+      </mat-icon>
+    </button>
+  }
+  @if (showValue) {
+    <span class="value" aria-hidden="true">{{ rating | number: '1.1-1' }}</span>
+  }
+</div>

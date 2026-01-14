@@ -1,0 +1,26 @@
+<section class="empty" aria-live="polite">
+  @if (icon) {
+    <div class="empty__icon" aria-hidden="true">
+      <mat-icon>{{ icon }}</mat-icon>
+    </div>
+  }
+
+  <h1 class="empty__title">{{ title }}</h1>
+
+  @if (message) {
+    <p class="empty__message">{{ message }}</p>
+  }
+
+  @if (primaryActionLabel && primaryActionLink) {
+    <div class="empty__actions">
+      <a mat-raised-button color="primary" [routerLink]="primaryActionLink">
+        {{ primaryActionLabel }}
+      </a>
+      @if (secondaryActionLabel && secondaryActionLink) {
+        <a mat-button [routerLink]="secondaryActionLink">
+          {{ secondaryActionLabel }}
+        </a>
+      }
+    </div>
+  }
+</section>
