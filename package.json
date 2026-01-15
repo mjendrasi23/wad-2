@@ -14,15 +14,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://git@gitlab.com/mariusz.jarocki/wad-cont.git"
+    "url": "https://github.com/mjendrasi23/wad-2.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://gitlab.com/mariusz.jarocki/wad-cont/issues"
-  },
-  "homepage": "https://gitlab.com/mariusz.jarocki/wad-cont#readme",
   "dependencies": {
     "@faker-js/faker": "^10.1.0",
     "@types/connect-sqlite3": "^0.9.6",
