@@ -8,6 +8,7 @@
     "dev": "ts-node-dev --respawn --watch .env src/index.ts",
     "build": "npm --prefix frontend run build && tsc",
     "start": "node dist/index.js",
+    "seed": "ts-node -e \"import { resetAndSeed } from './src/helpers/seed'; resetAndSeed()\"",
     "apidoc": "apidoc-markdown -i src/ -o API.md",
     "buildbundle": "esbuild dist/index.js --bundle --platform=node --outfile=dist/bundle.js --minify --external:sqlite3"
   },
