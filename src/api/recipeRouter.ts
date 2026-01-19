@@ -6,6 +6,8 @@ import { requireRole } from "../helpers/auth";
 
 export const recipeRouter = Router();
 
+
+/* old code
 recipeRouter.get('/', async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 10;
     const offset = parseInt(req.query.offset as string) || 0;
@@ -16,6 +18,35 @@ recipeRouter.get('/', async (req: Request, res: Response) => {
         [search, search, limit, offset]
     );
     res.json(recipes || []);
+*/ 
+recipeRouter.get('/', async (req: Request, res: Response) => {
+    try {
+        const page = parseInt(req.query.page as string) || 1;
+        const pageSize = parseInt(req.query.pageSize as string) || 10;
+        const offset = (page - 1) * pageSize;
+        
+        const search = req.query.textSearch ? `%${req.query.textSearch}%` : '%';
+
+        const recipes = await db.connection!.all(
+            'SELECT * FROM recipes WHERE title LIKE ? OR description LIKE ? LIMIT ? OFFSET ?',
+            [search, search, pageSize, offset]
+        );
+
+        const countResult = await db.connection!.get(
+            'SELECT COUNT(*) as total FROM recipes WHERE title LIKE ? OR description LIKE ?',
+            [search, search]
+        );
+
+        res.json({
+            items: recipes || [],
+            total: countResult.total,
+            page: page,
+            pageSize: pageSize
+        });
+
+    } catch (error) {
+        res.status(500).json({"Error" :"error"});
+    }
 });
 
 recipeRouter.get('/:id', async (req: Request, res: Response) => {
