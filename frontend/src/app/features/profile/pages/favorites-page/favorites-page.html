@@ -29,7 +29,7 @@
         @for (r of vm.result.items; track r.id) {
           <a class="card" [routerLink]="['/recipes', r.id]">
             <mat-card>
-              <img mat-card-image [src]="r.imageUrl" [alt]="r.title" loading="lazy" />
+              <app-recipe-image [src]="r.imageUrl" [alt]="r.title" [crop]="r.imageCrop"></app-recipe-image>
               <mat-card-content>
                 <div class="title">{{ r.title }}</div>
                 <div class="meta">

@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { CategoriesApi, CategoryUpsert } from '../apis/categories-api';
 import { Category } from '../models/category';
 import { HttpBaseApi } from './http-base-api';
+import { categoryFromBackend } from './backend-mappers';
 
 @Injectable()
 export class HttpCategoriesApi extends CategoriesApi {
@@ -11,15 +12,17 @@ export class HttpCategoriesApi extends CategoriesApi {
   }
 
   list(): Observable<Category[]> {
-    return this.base.http.get<Category[]>(`${this.base.baseUrl}/categories`);
+    return this.base.http.get<any[]>(`${this.base.baseUrl}/categories`).pipe(map((rows) => (rows || []).map(categoryFromBackend)));
   }
 
   create(request: CategoryUpsert): Observable<Category> {
-    return this.base.http.post<Category>(`${this.base.baseUrl}/categories`, request);
+    const body = { name: request.name, description: request.description };
+    return this.base.http.post<any>(`${this.base.baseUrl}/categories`, body).pipe(map(categoryFromBackend));
   }
 
   update(id: string, request: CategoryUpsert): Observable<Category> {
-    return this.base.http.put<Category>(`${this.base.baseUrl}/categories/${id}`, request);
+    const body = { name: request.name, description: request.description };
+    return this.base.http.put<any>(`${this.base.baseUrl}/categories/${id}`, body).pipe(map(categoryFromBackend));
   }
 
   delete(id: string): Observable<void> {

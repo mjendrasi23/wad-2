@@ -1,5 +1,6 @@
 import { open, Database } from "sqlite";
 import sqlite3 from "sqlite3";
+import { hashPassword } from "./password";
 
 export const db: { connection: Database | null } = {
   connection: null
@@ -20,9 +21,39 @@ export async function openDb(): Promise<void> {
   }
 
   await db.connection.exec('PRAGMA foreign_keys = ON');
+
+  // Lightweight migration: ensure newer tables exist even for older DB files.
+  await db.connection.exec(`
+    CREATE TABLE IF NOT EXISTS reports (
+      report_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      reporter_id INTEGER NOT NULL,
+      target_type TEXT NOT NULL CHECK (target_type IN ('recipe', 'comment')),
+      target_id INTEGER NOT NULL,
+      reason TEXT NOT NULL,
+      details TEXT,
+      status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'removed')),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      reviewed_by_id INTEGER,
+      reviewed_at DATETIME,
+      FOREIGN KEY (reporter_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+      FOREIGN KEY (reviewed_by_id) REFERENCES users(user_id) ON DELETE SET NULL ON UPDATE CASCADE
+    );
+  `);
+
+  // Lightweight migration: add new columns as needed.
+  try {
+    const recipeCols: Array<{ name: string }> = await db.connection.all('PRAGMA table_info(recipes);');
+    const hasImageCrop = recipeCols.some((c) => c.name === 'image_crop');
+    if (!hasImageCrop) {
+      await db.connection.exec('ALTER TABLE recipes ADD COLUMN image_crop TEXT');
+    }
+  } catch {
+    // Ignore (e.g. DB missing tables until initialized).
+  }
 }
 
 export async function createSchemaAndData(): Promise<void> {
+  const adminPasswordHash = hashPassword(process.env.ADMINPASSWORD || 'Admin123');
   const schema = `
     PRAGMA foreign_keys = ON;
 
@@ -56,6 +87,7 @@ export async function createSchemaAndData(): Promise<void> {
         description TEXT,
         steps TEXT NOT NULL,
         image_path TEXT,
+        image_crop TEXT,
         average_rating REAL DEFAULT 0.0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME,
@@ -121,6 +153,21 @@ export async function createSchemaAndData(): Promise<void> {
         FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id) ON DELETE CASCADE ON UPDATE CASCADE
     );
 
+    CREATE TABLE reports (
+        report_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        reporter_id INTEGER NOT NULL,
+        target_type TEXT NOT NULL CHECK (target_type IN ('recipe', 'comment')),
+        target_id INTEGER NOT NULL,
+        reason TEXT NOT NULL,
+        details TEXT,
+        status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'removed')),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        reviewed_by_id INTEGER,
+        reviewed_at DATETIME,
+        FOREIGN KEY (reporter_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+        FOREIGN KEY (reviewed_by_id) REFERENCES users(user_id) ON DELETE SET NULL ON UPDATE CASCADE
+    );
+
     CREATE TABLE audit_log (
         log_id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
@@ -141,7 +188,7 @@ export async function createSchemaAndData(): Promise<void> {
     ('Soups', 'Hot and cold soups'), 
     ('Vegan', 'Plant-based recipes');
 
-    INSERT INTO users (username, email, password_hash, role_id) VALUES ('admin', 'admin@example.com', 'HASHED_PASSWORD', 1);
+    INSERT INTO users (username, email, password_hash, role_id) VALUES ('admin', 'admin@example.com', '${adminPasswordHash}', 1);
 
     CREATE TRIGGER rating_after_insert AFTER INSERT ON ratings BEGIN
         UPDATE recipes SET average_rating = (SELECT IFNULL(ROUND(AVG(rating_value), 2), 0) FROM ratings WHERE recipe_id = NEW.recipe_id) WHERE recipe_id = NEW.recipe_id;

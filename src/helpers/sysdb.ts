@@ -4,7 +4,8 @@
 import { open, Database } from "sqlite";
 import sqlite3 from "sqlite3";
 
-import { hashPassword, users } from "./auth";
+import { users } from "./auth";
+import { hashPassword } from "./password";
 import { User } from "../model/user";
 
 export const db: { connection: Database | null} = {
@@ -52,9 +53,9 @@ export async function loadUsers(): Promise<User[]> {
   const rows = await db.connection!.all('SELECT * FROM users');
   return rows.map((row: any) => {
     return {
-      id: row.user_id,
+      id: row.id,
       username: row.username,
-      password: row._hashpassword,
+      password: row.password,
       roles: JSON.parse(row.roles)
     } as unknown as User;
   });

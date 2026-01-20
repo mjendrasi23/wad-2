@@ -18,12 +18,12 @@ export class RegisterPage {
 
   readonly form = this.fb.group(
     {
-      name: this.fb.nonNullable.control('', [Validators.required, Validators.maxLength(60)]),
+      username: this.fb.nonNullable.control('', [Validators.required, Validators.maxLength(60)]),
       email: this.fb.nonNullable.control('', [Validators.required, Validators.email]),
       password: this.fb.nonNullable.control('', [
         Validators.required,
         Validators.minLength(8),
-        Validators.pattern(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[^\\w\\s]).+$/),
+        Validators.pattern(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^\w\s]).+$/),
       ]),
       confirmPassword: this.fb.nonNullable.control('', [Validators.required]),
     },
@@ -36,15 +36,14 @@ export class RegisterPage {
   submit(): void {
     this.formError = null;
     this.form.markAllAsTouched();
-    if (this.form.invalid) return;
-    if (!this.env.useMockApi) {
-      this.formError = 'Registration is disabled when using a real backend stub.';
+    if (this.form.invalid) {
+      this.formError = 'Please fix the highlighted fields.';
       return;
     }
 
     this.loading = true;
-    const { name, email, password } = this.form.getRawValue();
-    this.auth.register({ name, email, password }).subscribe((res) => {
+    const { username, email, password } = this.form.getRawValue();
+    this.auth.register({ username, email, password }).subscribe((res) => {
       this.loading = false;
       if (!res.ok) {
         this.formError = res.message ?? 'Registration failed.';

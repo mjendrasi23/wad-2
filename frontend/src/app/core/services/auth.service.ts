@@ -65,8 +65,12 @@ export class AuthService {
   }
 
   logout(): void {
-    this.clearSession();
-    void this.router.navigateByUrl('/');
+    this.api.logout().pipe(catchError(() => of(void 0))).subscribe({
+      complete: () => {
+        this.clearSession();
+        void this.router.navigateByUrl('/');
+      },
+    });
   }
 
   devSwitchRole(role: UserRole | 'guest'): Observable<void> {
@@ -78,10 +82,10 @@ export class AuthService {
     }
 
     const creds: Record<UserRole, LoginRequest> = {
-      explorer: { email: 'user@demo.com', password: 'Password123!' },
-      creator: { email: 'user@demo.com', password: 'Password123!' },
-      manager: { email: 'manager@demo.com', password: 'Password123!' },
-      admin: { email: 'admin@demo.com', password: 'Password123!' },
+      explorer: { username: 'user@demo.com', password: 'Password123!' },
+      creator: { username: 'user@demo.com', password: 'Password123!' },
+      manager: { username: 'manager@demo.com', password: 'Password123!' },
+      admin: { username: 'admin@demo.com', password: 'Password123!' },
     };
 
     return this.api.login(creds[role]).pipe(

@@ -34,6 +34,7 @@ import { EmptyState } from './components/empty-state/empty-state';
 import { SkeletonCards } from './components/skeleton-cards/skeleton-cards';
 import { RatingStars } from './components/rating-stars/rating-stars';
 import { ConfirmDialog } from './components/confirm-dialog/confirm-dialog';
+import { RecipeImage } from './components/recipe-image/recipe-image';
 
 
 
@@ -42,7 +43,8 @@ import { ConfirmDialog } from './components/confirm-dialog/confirm-dialog';
     EmptyState,
     SkeletonCards,
     RatingStars,
-    ConfirmDialog
+    ConfirmDialog,
+    RecipeImage
   ],
   imports: [
     CommonModule,
@@ -112,7 +114,8 @@ import { ConfirmDialog } from './components/confirm-dialog/confirm-dialog';
     EmptyState,
     SkeletonCards,
     RatingStars,
-    ConfirmDialog
+    ConfirmDialog,
+    RecipeImage
   ],
 })
 export class SharedModule { }

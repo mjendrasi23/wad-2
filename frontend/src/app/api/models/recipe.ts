@@ -2,11 +2,18 @@ export interface RecipeIngredient {
   text: string;
 }
 
+export interface ImageCrop {
+  originX: number;
+  originY: number;
+  zoom: number;
+}
+
 export interface Recipe {
   id: string;
   title: string;
   description: string;
   imageUrl?: string;
+  imageCrop?: ImageCrop;
   categoryId: string;
   tags: string[];
   ingredients: RecipeIngredient[];
@@ -23,6 +30,7 @@ export interface RecipeListItem {
   title: string;
   description: string;
   imageUrl?: string;
+  imageCrop?: ImageCrop;
   categoryId: string;
   tags: string[];
   authorId: string;
@@ -43,6 +51,7 @@ export interface RecipeUpsert {
   title: string;
   description: string;
   imageUrl?: string;
+  imageCrop?: ImageCrop;
   categoryId: string;
   tags: string[];
   ingredients: RecipeIngredient[];

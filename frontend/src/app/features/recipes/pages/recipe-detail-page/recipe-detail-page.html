@@ -1,6 +1,6 @@
 @if (recipe$ | async; as recipe) {
   <div class="hero">
-    <div class="hero__img" [style.backgroundImage]="'url(' + recipe.imageUrl + ')'"></div>
+    <app-recipe-image class="hero__img" [src]="recipe.imageUrl" [alt]="recipe.title" [crop]="recipe.imageCrop" [loading]="'eager'"></app-recipe-image>
     <div class="hero__content">
       <div class="hero__top">
         <div>
@@ -156,7 +156,7 @@
               @for (cm of c.comments; track cm.id) {
                 <div class="comment">
                   <div class="comment__meta">
-                    <span class="comment__author">User {{ cm.authorId }}</span>
+                    <span class="comment__author">{{ cm.authorName ?? ('User ' + cm.authorId) }}</span>
                     @if (cm.authorRating) {
                       <span class="comment__rating">
                         <app-rating-stars

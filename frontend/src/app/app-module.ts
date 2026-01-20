@@ -18,6 +18,7 @@ import { AdminModule } from './features/admin/admin-module';
 import { GlobalErrorHandler } from './core/error/global-error-handler';
 import { AuthTokenInterceptor } from './core/interceptors/auth-token-interceptor';
 import { HttpErrorInterceptor } from './core/interceptors/http-error-interceptor';
+import { CredentialsInterceptor } from './core/interceptors/credentials-interceptor';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 @NgModule({
@@ -43,6 +44,7 @@ import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
     provideBrowserGlobalErrorListeners(),
     provideCharts(withDefaultRegisterables()),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
+    { provide: HTTP_INTERCEPTORS, useClass: CredentialsInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: AuthTokenInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
   ],

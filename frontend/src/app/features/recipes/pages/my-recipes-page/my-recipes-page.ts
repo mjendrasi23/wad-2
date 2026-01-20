@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, map, shareReplay, startWith, switchMap } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, map, shareReplay, startWith, switchMap, tap } from 'rxjs';
 import { RecipesApi } from '../../../../api/apis/recipes-api';
 import { PagedResult } from '../../../../api/models/paging';
 import { RecipeListItem, RecipeSortBy, RecipesListQuery, SortDir } from '../../../../api/models/recipe';
@@ -37,7 +37,11 @@ export class MyRecipesPage {
       startWith(this.form.getRawValue()),
       debounceTime(150),
       map(() => this.form.getRawValue()),
-      distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))
+      distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+      tap(() => {
+        const p = this.pageSubject.value;
+        if (p.page !== 1) this.pageSubject.next({ page: 1, pageSize: p.pageSize });
+      })
     ),
     this.page$,
   ]).pipe(
@@ -50,6 +54,11 @@ export class MyRecipesPage {
         textSearch: f.textSearch || undefined,
       };
       return this.recipesApi.listMine(query).pipe(
+        tap((result) => {
+          if (query.page > 1 && result.total > 0 && result.items.length === 0) {
+            this.pageSubject.next({ page: 1, pageSize: query.pageSize });
+          }
+        }),
         map((result) => ({ query, result, loading: false } satisfies MyRecipesVm)),
         startWith({ query, result: null, loading: true } satisfies MyRecipesVm)
       );

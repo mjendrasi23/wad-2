@@ -1,7 +1,7 @@
 <div class="header">
   <div>
     <h1 class="page-title">Recipes</h1>
-    <p class="page-subtitle">Server-side paging, filtering, and sorting (simulated by the Mock API).</p>
+    <p class="page-subtitle">Server-side paging, filtering, and sorting (served by the backend API).</p>
   </div>
   <mat-button-toggle-group
     class="view-toggle"
@@ -109,7 +109,7 @@
           @for (r of vm.result.items; track r.id) {
             <a class="card" [routerLink]="['/recipes', r.id]">
               <mat-card>
-                <img mat-card-image [src]="r.imageUrl" [alt]="r.title" loading="lazy" />
+                <app-recipe-image [src]="r.imageUrl" [alt]="r.title" [crop]="r.imageCrop"></app-recipe-image>
                 <mat-card-content>
                   <div class="title">{{ r.title }}</div>
                   <div class="desc">{{ r.description }}</div>

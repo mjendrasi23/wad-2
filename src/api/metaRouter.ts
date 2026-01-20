@@ -154,3 +154,28 @@ metaRouter.delete('/ingredients/:id', requireRole([1, 2]), async (req: Request, 
     if (deleted.changes === 0) throw new HttpError(404, 'Ingredient not found');
     res.status(204).send();
 });
+
+metaRouter.get('/stats/categories/popular', requireRole([1, 2]), async (_req: Request, res: Response) => {
+    const rows = await db.connection!.all(
+        `SELECT c.category_id as categoryId, c.name as categoryName, COUNT(r.recipe_id) as recipeCount
+         FROM categories c
+         LEFT JOIN recipes r ON r.category_id = c.category_id
+         GROUP BY c.category_id
+         ORDER BY recipeCount DESC, c.name ASC`
+    );
+    res.json(rows || []);
+});
+
+metaRouter.get('/stats/categories/ratings', requireRole([1, 2]), async (_req: Request, res: Response) => {
+    const rows = await db.connection!.all(
+        `SELECT c.category_id as categoryId, c.name as categoryName,
+                COALESCE(ROUND(AVG(rt.rating_value), 2), 0) as avgRating,
+                COUNT(rt.rating_id) as ratingsCount
+         FROM categories c
+         LEFT JOIN recipes r ON r.category_id = c.category_id
+         LEFT JOIN ratings rt ON rt.recipe_id = r.recipe_id
+         GROUP BY c.category_id
+         ORDER BY avgRating DESC, ratingsCount DESC, c.name ASC`
+    );
+    res.json(rows || []);
+});

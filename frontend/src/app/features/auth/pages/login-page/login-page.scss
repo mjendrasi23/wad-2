@@ -40,8 +40,9 @@
   font: var(--mat-sys-body-small);
 }
 
-button mat-progress-spinner {
+button .spinner {
   margin-right: 8px;
+  animation: spin 0.85s linear infinite;
 }
 
 .links {
@@ -50,4 +51,13 @@ button mat-progress-spinner {
   align-items: center;
   justify-content: center;
   color: var(--mat-sys-on-surface-variant);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }

@@ -1,7 +1,9 @@
 import { Component, inject } from '@angular/core';
+import { DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, map, shareReplay, startWith, switchMap } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, map, shareReplay, startWith, switchMap, tap } from 'rxjs';
 import { CategoriesApi } from '../../../../api/apis/categories-api';
 import { RecipesApi } from '../../../../api/apis/recipes-api';
 import { Category } from '../../../../api/models/category';
@@ -21,6 +23,7 @@ export interface RecipesListVm {
   styleUrl: './recipes-list-page.scss',
 })
 export class RecipesListPage {
+  private readonly destroyRef = inject(DestroyRef);
   private readonly fb = inject(FormBuilder);
   private readonly recipesApi = inject(RecipesApi);
   private readonly categoriesApi = inject(CategoriesApi);
@@ -50,10 +53,16 @@ export class RecipesListPage {
 
   readonly vm$ = combineLatest([
     this.form.valueChanges.pipe(
-      startWith(this.form.getRawValue()),
+      // Use a deferred initial emission so query params patched in the constructor are reflected.
+      startWith(null),
       debounceTime(150),
       map(() => this.form.getRawValue()),
-      distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))
+      distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+      tap(() => {
+        // If filters change while on a later page, reset to page 1 so results aren't "empty" due to offset.
+        const p = this.pageSubject.value;
+        if (p.page !== 1) this.pageSubject.next({ page: 1, pageSize: p.pageSize });
+      })
     ),
     this.page$,
   ]).pipe(
@@ -71,6 +80,11 @@ export class RecipesListPage {
       };
 
       return this.recipesApi.list(query).pipe(
+        tap((result) => {
+          if (query.page > 1 && result.total > 0 && result.items.length === 0) {
+            this.pageSubject.next({ page: 1, pageSize: query.pageSize });
+          }
+        }),
         map((result) => ({ query, result, loading: false } satisfies RecipesListVm)),
         startWith({ query, result: null, loading: true } satisfies RecipesListVm)
       );
@@ -79,14 +93,15 @@ export class RecipesListPage {
   );
 
   constructor() {
-    const qp = this.route.snapshot.queryParamMap;
-    const q = qp.get('q') ?? '';
-    const categoryId = qp.get('categoryId') ?? '';
-    const tags = qp.get('tags') ?? '';
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((qp) => {
+      const q = qp.get('q') ?? '';
+      const categoryId = qp.get('categoryId') ?? '';
+      const tags = qp.get('tags') ?? '';
 
-    if (q || categoryId || tags) {
       this.form.patchValue({ textSearch: q, categoryId, tags }, { emitEvent: false });
-    }
+      const p = this.pageSubject.value;
+      if (p.page !== 1) this.pageSubject.next({ page: 1, pageSize: p.pageSize });
+    });
   }
 
   onPageChange(pageIndex: number, pageSize: number): void {

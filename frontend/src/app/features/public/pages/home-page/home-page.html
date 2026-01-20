@@ -27,7 +27,7 @@
       @for (r of vm.featured.items; track r.id) {
         <a class="card" [routerLink]="['/recipes', r.id]">
           <mat-card>
-            <img mat-card-image [src]="r.imageUrl" [alt]="r.title" loading="lazy" />
+            <app-recipe-image [src]="r.imageUrl" [alt]="r.title" [crop]="r.imageCrop"></app-recipe-image>
             <mat-card-content>
               <div class="card__title">{{ r.title }}</div>
               <div class="card__meta">
@@ -60,7 +60,7 @@
         @for (r of vm.topRated.items; track r.id) {
           <a class="card" [routerLink]="['/recipes', r.id]">
             <mat-card>
-              <img mat-card-image [src]="r.imageUrl" [alt]="r.title" loading="lazy" />
+              <app-recipe-image [src]="r.imageUrl" [alt]="r.title" [crop]="r.imageCrop"></app-recipe-image>
               <mat-card-content>
                 <div class="card__title">{{ r.title }}</div>
                 <div class="card__meta">

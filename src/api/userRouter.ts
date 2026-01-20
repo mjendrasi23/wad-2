@@ -3,6 +3,7 @@ import { db } from "../helpers/db";
 import { User } from "../model/user";
 import { HttpError } from "../helpers/errors";
 import { requireRole } from "../helpers/auth";
+import { hashPassword } from "../helpers/password";
 
 export const userRouter = Router();
 
@@ -15,7 +16,7 @@ userRouter.post('/', async (req: Request, res: Response) => {
     const { username, email, password, role_id } = req.body;
     await db.connection!.exec('BEGIN IMMEDIATE');
     try {
-        const newUser = new User(username, email, password, role_id || 3);
+        const newUser = new User(username, email, hashPassword(String(password)), role_id || 3);
         const addedUser = await db.connection!.get(
             'INSERT INTO users (username, email, password_hash, role_id) VALUES (?, ?, ?, ?) RETURNING user_id, username, email, role_id',
             newUser.username, newUser.email, newUser.password_hash, newUser.role_id

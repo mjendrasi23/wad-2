@@ -12,6 +12,7 @@ import { userRouter } from "./api/userRouter";
 import { recipeRouter } from "./api/recipeRouter";
 import { metaRouter } from "./api/metaRouter";
 import { interactionRouter } from "./api/interactionRouter";
+import { adminRouter } from "./api/adminRouter";
 
 config({ quiet: true });
 
@@ -20,11 +21,31 @@ const app = express();
 // log http requests
 app.use(morgan(process.env.MORGANTYPE || "tiny"));
 
+// CORS (needed for local dev when frontend runs on a different port)
+const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:4200")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+app.use((req, res, next) => {
+  const origin = req.headers.origin as string | undefined;
+  if (origin && (corsOrigins.includes("*") || corsOrigins.includes(origin))) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  }
+  if (req.method === "OPTIONS") return res.status(204).end();
+  next();
+});
+
 // static files (angular app)
 const frontendPath = process.env.FRONTEND || "./frontend/dist/frontend/browser";
 app.use(express.static(frontendPath));
 // static uploaded files
 app.use("/uploads", express.static(process.env.UPLOADSDIR || "./uploads"));
+// static pictures (placeholders/icons)
+app.use("/pictures", express.static(process.env.PICTURESDIR || "./pictures"));
 
 // api url prefix
 const apiUrl = process.env.APIURL || "/api";
@@ -43,7 +64,7 @@ async function main() {
   console.log("Main database connected");
 
   // auth router
-  app.use("/api/auth", authRouter);
+  app.use(apiUrl + "/auth", authRouter);
 
   // file upload router
   app.use(apiUrl + "/upload", uploadRouter);
@@ -51,6 +72,8 @@ async function main() {
   app.use(apiUrl + "/users", userRouter);
 
   app.use(apiUrl + "/recipes", recipeRouter);
+
+  app.use(apiUrl, adminRouter);
 
   app.use(apiUrl, metaRouter);
 

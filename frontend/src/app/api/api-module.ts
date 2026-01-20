@@ -13,6 +13,7 @@ import { RecipesApi } from './apis/recipes-api';
 import { ReportsApi } from './apis/reports-api';
 import { StatsApi } from './apis/stats-api';
 import { UsersApi } from './apis/users-api';
+import { UploadsApi } from './apis/uploads-api';
 
 import { MockAuthApi } from './mock/mock-auth-api';
 import { MockCategoriesApi } from './mock/mock-categories-api';
@@ -24,6 +25,7 @@ import { MockRecipesApi } from './mock/mock-recipes-api';
 import { MockReportsApi } from './mock/mock-reports-api';
 import { MockStatsApi } from './mock/mock-stats-api';
 import { MockUsersApi } from './mock/mock-users-api';
+import { MockUploadsApi } from './mock/mock-uploads-api';
 
 import { HttpAuthApi } from './http/http-auth-api';
 import { HttpCategoriesApi } from './http/http-categories-api';
@@ -35,6 +37,7 @@ import { HttpRecipesApi } from './http/http-recipes-api';
 import { HttpReportsApi } from './http/http-reports-api';
 import { HttpStatsApi } from './http/http-stats-api';
 import { HttpUsersApi } from './http/http-users-api';
+import { HttpUploadsApi } from './http/http-uploads-api';
 
 
 
@@ -55,6 +58,7 @@ import { HttpUsersApi } from './http/http-users-api';
     { provide: ReportsApi, useClass: environment.useMockApi ? MockReportsApi : HttpReportsApi },
     { provide: StatsApi, useClass: environment.useMockApi ? MockStatsApi : HttpStatsApi },
     { provide: MaintenanceApi, useClass: environment.useMockApi ? MockMaintenanceApi : HttpMaintenanceApi },
+    { provide: UploadsApi, useClass: environment.useMockApi ? MockUploadsApi : HttpUploadsApi },
   ],
 })
 export class ApiModule { }

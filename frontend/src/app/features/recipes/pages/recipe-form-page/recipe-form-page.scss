@@ -20,16 +20,73 @@
   gap: 12px;
 }
 
-.preview {
+.image-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.image-actions__file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.crop {
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid var(--mat-sys-outline-variant);
 }
 
-.preview img {
+.crop__frame {
+  position: relative;
+  cursor: grab;
+  touch-action: none;
+}
+
+.crop__frame:active {
+  cursor: grabbing;
+}
+
+.crop__overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(0deg, color-mix(in srgb, var(--mat-sys-on-surface) 16%, transparent), transparent 40%, transparent 60%, color-mix(in srgb, var(--mat-sys-on-surface) 16%, transparent)),
+    linear-gradient(90deg, color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent), transparent 40%, transparent 60%, color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent));
+  opacity: 0.25;
+}
+
+.crop__controls {
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+  background: var(--mat-sys-surface);
+}
+
+.crop__label {
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.crop__row {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.crop__range {
   width: 100%;
-  height: auto;
-  display: block;
+}
+
+.crop__hint {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .rows {

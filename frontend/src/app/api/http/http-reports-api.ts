@@ -17,7 +17,7 @@ export class HttpReportsApi extends ReportsApi {
   }
 
   moderationQueue(query: ModerationQueueQuery): Observable<PagedResult<Report>> {
-    return this.base.http.get<PagedResult<Report>>(`${this.base.baseUrl}/management/moderation`, { params: query as any });
+    return this.base.http.get<PagedResult<Report>>(`${this.base.baseUrl}/management/moderation`, { params: this.base.params(query as any) });
   }
 
   resolve(reportId: string): Observable<Report> {

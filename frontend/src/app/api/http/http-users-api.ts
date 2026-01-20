@@ -12,7 +12,7 @@ export class HttpUsersApi extends UsersApi {
   }
 
   list(query: UsersListQuery): Observable<PagedResult<User>> {
-    return this.base.http.get<PagedResult<User>>(`${this.base.baseUrl}/admin/users`, { params: query as any });
+    return this.base.http.get<PagedResult<User>>(`${this.base.baseUrl}/admin/users`, { params: this.base.params(query as any) });
   }
 
   getById(id: string): Observable<User> {

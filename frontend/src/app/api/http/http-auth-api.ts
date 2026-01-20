@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { AuthApi, LoginRequest, LoginResponse, RegisterRequest } from '../apis/auth-api';
 import { User } from '../models/user';
 import { HttpBaseApi } from './http-base-api';
+import { userFromAuthPayload } from './backend-mappers';
 
 @Injectable()
 export class HttpAuthApi extends AuthApi {
@@ -11,19 +12,23 @@ export class HttpAuthApi extends AuthApi {
   }
 
   login(request: LoginRequest): Observable<LoginResponse> {
-    return this.base.http.post<LoginResponse>(`${this.base.baseUrl}/auth/login`, request);
+    return this.base.http
+      .post<any>(`${this.base.baseUrl}/auth/login`, request)
+      .pipe(map((payload) => ({ token: 'session', user: userFromAuthPayload(payload)! })));
   }
 
   register(request: RegisterRequest): Observable<LoginResponse> {
-    return this.base.http.post<LoginResponse>(`${this.base.baseUrl}/auth/register`, request);
+    return this.base.http
+      .post<any>(`${this.base.baseUrl}/auth/register`, request)
+      .pipe(map((payload) => ({ token: 'session', user: userFromAuthPayload(payload)! })));
   }
 
   me(token: string | null): Observable<User | null> {
-    // The real backend should typically infer the user from the Authorization header.
-    // We pass the token here to keep the UI-layer code independent of the auth mechanism.
-    return this.base.http.get<User | null>(`${this.base.baseUrl}/auth/me`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
+    return this.base.http.get<any>(`${this.base.baseUrl}/auth/me`).pipe(map((payload) => userFromAuthPayload(payload)));
+  }
+
+  logout(): Observable<void> {
+    return this.base.http.delete<void>(`${this.base.baseUrl}/auth/logout`);
   }
 }
 

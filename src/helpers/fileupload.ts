@@ -47,7 +47,7 @@ function sanitizeFilename(name: string): string {
  *
  * @apiUse HttpError
  */
-uploadRouter.post('/', requireRole([0]), async (req: Request, res: Response) => {
+uploadRouter.post('/', requireRole([1, 2, 3, 4]), async (req: Request, res: Response) => {
   const form = formidable({
     uploadDir,            // Directory where files are saved
     keepExtensions: true, // Preserve file extensions

@@ -1,4 +1,3 @@
-import { scryptSync, randomBytes } from 'crypto';
 import { Express, Request, Response, NextFunction, Router, RequestHandler } from 'express';
 import session from 'express-session';
 import passport from 'passport';
@@ -8,6 +7,7 @@ import { User } from '../model/user';
 import { HttpError } from './errors';
 import { reloadUsers } from './sysdb';
 import { db } from "../helpers/db";
+import { hashPassword, verifyPassword } from './password';
 
 
 export const authRouter = Router();
@@ -20,24 +20,17 @@ export function requireRole(roles: number[]): RequestHandler {
   return (req: Request, _res: Response, next: NextFunction) => {
     const authReq = req as AuthRequest;
     const user = authReq.user as User | undefined;
-    const hasRole = user?.roles?.some(role => roles.includes(role));
+    const userRoleIds =
+      Array.isArray((user as any)?.roles) ? (user as any).roles :
+      typeof (user as any)?.role_id === 'number' ? [(user as any).role_id] :
+      [];
+
+    const hasRole = userRoleIds.some((role: number) => roles.includes(role));
     if (!hasRole) {
       throw new HttpError(403, 'You do not have permission to do this');
     }
     next();
   };
-}
-
-export function hashPassword(password: string): string {
-  const salt = randomBytes(16).toString('hex');
-  const hash = scryptSync(password, salt, 64).toString('hex');
-  return `${salt}:${hash}`;
-}
-
-export function verifyPassword(password: string, stored: string): boolean {
-  const [salt, hash] = stored.split(':');
-  const hashToCompare = scryptSync(password, salt, 64).toString('hex');
-  return hash === hashToCompare;
 }
 
 export const users: User[] = []
@@ -76,7 +69,11 @@ export async function initAuth(app: Express, reset: boolean = false): Promise<vo
       saveUninitialized: false,
       // store sessions in sqlite database
       store: new SQLiteStore({ db: process.env.SESSIONSDBFILE || './db/sessions.sqlite3' }) as session.Store,
-      cookie: { maxAge: 86400000 } // default 1 day
+      cookie: {
+        maxAge: 86400000, // default 1 day
+        sameSite: (process.env.COOKIE_SAMESITE as any) || 'lax',
+        secure: process.env.COOKIE_SECURE === 'true',
+      }
     })
   );
 
@@ -91,17 +88,21 @@ export async function initAuth(app: Express, reset: boolean = false): Promise<vo
 }
 
 async function findUserById(id: number): Promise<User | undefined> {
-  return await db.connection!.get(
+  const row = await db.connection!.get(
     'SELECT * FROM users WHERE user_id = ?', 
     [id]
   );
+  if (!row) return undefined;
+  return { ...row, roles: [row.role_id] } as User;
 }
 
 async function findUserByUsername(username: string): Promise<User | undefined> {
-  return await db.connection!.get(
+  const row = await db.connection!.get(
     'SELECT * FROM users WHERE username = ?', 
     [username]
   );
+  if (!row) return undefined;
+  return { ...row, roles: [row.role_id] } as User;
 }
 
 
@@ -140,14 +141,33 @@ passport.deserializeUser(async (id: number, done: (err: any, user?: User | false
  * @apiError (401) Unauthorized Invalid credentials
  * @apiUse HttpError
 */
-authRouter.post('', passport.authenticate('json'), (req: Request, res: Response) => {
-  const authReq = req as AuthRequest;
-  res.json({
-    message: 'Logged in successfully',
-    username: authReq.user?.username,
-    roles: authReq.user?.roles
-  });
-});
+function authResponse(user: User | undefined | null) {
+  if (!user) return { user: null, roles: null };
+  return {
+    user: {
+      user_id: (user as any).user_id,
+      username: (user as any).username,
+      email: (user as any).email,
+      role_id: (user as any).role_id,
+      created_at: (user as any).created_at,
+    },
+    roles: Array.isArray((user as any).roles) ? (user as any).roles : [(user as any).role_id],
+  };
+}
+
+const loginHandler = [
+  passport.authenticate('json'),
+  (req: Request, res: Response) => {
+    const authReq = req as AuthRequest;
+    res.json({
+      message: 'Logged in successfully',
+      ...authResponse(authReq.user ?? null),
+    });
+  },
+] as const;
+
+authRouter.post('', ...loginHandler);
+authRouter.post('/login', ...loginHandler);
 
 /**
  * @api {delete} /api/auth Logout user
@@ -163,6 +183,13 @@ authRouter.post('', passport.authenticate('json'), (req: Request, res: Response)
  */
 authRouter.delete('', (req: Request, res: Response, next: NextFunction) => {
   const authReq = req as AuthRequest;  
+  authReq.logout((err) => {
+    if (err) return next(err);
+    res.json({ message: 'Logged out' });
+  });
+});
+authRouter.delete('/logout', (req: Request, res: Response, next: NextFunction) => {
+  const authReq = req as AuthRequest;
   authReq.logout((err) => {
     if (err) return next(err);
     res.json({ message: 'Logged out' });
@@ -186,8 +213,42 @@ authRouter.delete('', (req: Request, res: Response, next: NextFunction) => {
 authRouter.get('', (req: Request, res: Response) => {
   if(req.isAuthenticated()) {
     const user = req.user as User;
-    res.json({ username: user.username, roles: user.roles });
+    res.json(authResponse(user));
   } else {
-    res.json({ username: null, roles: null });
+    res.json(authResponse(null));
+  }
+});
+authRouter.get('/me', (req: Request, res: Response) => {
+  if (req.isAuthenticated()) {
+    res.json(authResponse(req.user as User));
+  } else {
+    res.json(authResponse(null));
+  }
+});
+
+authRouter.post('/register', async (req: Request, res: Response) => {
+  const { username, email, password, role_id } = req.body ?? {};
+  if (!username || !email || !password) {
+    throw new HttpError(400, 'username, email and password are required');
+  }
+
+  await db.connection!.exec('BEGIN IMMEDIATE');
+  try {
+    const password_hash = hashPassword(String(password));
+    const created = await db.connection!.get(
+      'INSERT INTO users (username, email, password_hash, role_id) VALUES (?, ?, ?, ?) RETURNING *',
+      [String(username), String(email), password_hash, Number(role_id) || 3]
+    );
+    await db.connection!.exec('COMMIT');
+
+    const user = { ...created, roles: [created.role_id] } as User;
+    (req as any).login(user, (err: any) => {
+      if (err) return res.status(500).json({ code: 500, message: 'Login after registration failed' });
+      res.status(201).json({ message: 'Registered successfully', ...authResponse(user) });
+    });
+  } catch (error: any) {
+    await db.connection!.exec('ROLLBACK');
+    if (error.message?.includes('UNIQUE')) throw new HttpError(409, 'Email or username already registered');
+    throw new HttpError(400, 'Cannot create user: ' + error.message);
   }
 });

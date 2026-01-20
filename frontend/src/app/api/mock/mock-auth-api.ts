@@ -30,12 +30,13 @@ export class MockAuthApi extends AuthApi {
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.base.network(() => {
       const db = this.dbService.require();
-      const user = db.users.find((u) => u.email.toLowerCase() === request.email.toLowerCase());
-      if (!user) throw new ApiError('Invalid email or password.', 401, 'AUTH_INVALID');
+      const loginId = request.username.trim().toLowerCase();
+      const user = db.users.find((u) => u.email.toLowerCase() === loginId || u.name.toLowerCase() === loginId);
+      if (!user) throw new ApiError('Invalid username or password.', 401, 'AUTH_INVALID');
 
       const privateRow = db.userPrivate.find((p) => p.userId === user.id);
       if (!privateRow || privateRow.password !== request.password) {
-        throw new ApiError('Invalid email or password.', 401, 'AUTH_INVALID');
+        throw new ApiError('Invalid username or password.', 401, 'AUTH_INVALID');
       }
 
       return { token: makeToken(user.id), user };
@@ -54,7 +55,7 @@ export class MockAuthApi extends AuthApi {
 
       const createdAt = nowIso();
       const userId = id('u_reg', db.users.length + 1);
-      const user: User = { id: userId, name: request.name.trim() || 'New User', email, role: 'creator', createdAt };
+      const user: User = { id: userId, name: request.username.trim() || 'New User', email, role: 'creator', createdAt };
 
       this.dbService.update((d) => {
         d.users.unshift(user);
@@ -73,6 +74,10 @@ export class MockAuthApi extends AuthApi {
       const db = this.dbService.require();
       return db.users.find((u) => u.id === userId) ?? null;
     });
+  }
+
+  logout(): Observable<void> {
+    return this.base.network(() => void 0);
   }
 }
 

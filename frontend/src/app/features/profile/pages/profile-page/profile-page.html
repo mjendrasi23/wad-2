@@ -47,7 +47,7 @@
             <div class="fav-list">
               @for (r of fav.items; track r.id) {
                 <a class="fav" [routerLink]="['/recipes', r.id]">
-                  <img [src]="r.imageUrl" [alt]="r.title" />
+                  <app-recipe-image [src]="r.imageUrl" [alt]="r.title" [crop]="r.imageCrop"></app-recipe-image>
                   <div>
                     <div class="fav__title">{{ r.title }}</div>
                     <div class="fav__meta">{{ r.favoritesCount }} saves</div>
