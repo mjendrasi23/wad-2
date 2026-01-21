@@ -6,6 +6,9 @@ import { NgZone } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class ErrorHandlingService {
+  private lastToastAt = 0;
+  private lastToastMessage: string | null = null;
+
   constructor(
     private readonly snackBar: MatSnackBar,
     private readonly zone: NgZone
@@ -13,6 +16,17 @@ export class ErrorHandlingService {
 
   notifyError(error: unknown, fallbackMessage = 'Something went wrong. Please try again.'): void {
     const message = this.messageFrom(error) ?? fallbackMessage;
+
+    // Prevent toast storms when the same error is raised repeatedly (e.g. dev-mode NG0100 loops).
+    const now = Date.now();
+    if (this.lastToastMessage === message && now - this.lastToastAt < 1500) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+      return;
+    }
+    this.lastToastAt = now;
+    this.lastToastMessage = message;
+
     // Defer snackbar open to avoid ExpressionChangedAfterItHasBeenCheckedError during app bootstrap/navigation.
     this.zone.run(() => {
       setTimeout(() => {

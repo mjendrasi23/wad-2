@@ -10,7 +10,10 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     return next.handle(req).pipe(
       catchError((err) => {
-        this.errors.notifyError(err);
+        // Auth pages show inline errors; avoid snackbar storms on invalid credentials.
+        const url = String(req.url ?? '');
+        const isAuthAttempt = url.includes('/auth/login') || url.includes('/auth/register');
+        if (!isAuthAttempt) this.errors.notifyError(err);
         return throwError(() => err);
       })
     );

@@ -2,6 +2,7 @@ import { ErrorHandler, NgModule, provideBrowserGlobalErrorListeners } from '@ang
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 
 import { AppRoutingModule } from './app-routing-module';
 import { App } from './app';
@@ -43,6 +44,7 @@ import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideCharts(withDefaultRegisterables()),
+    { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { subscriptSizing: 'fixed' } },
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     { provide: HTTP_INTERCEPTORS, useClass: CredentialsInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: AuthTokenInterceptor, multi: true },

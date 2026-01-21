@@ -37,7 +37,7 @@ The backend uses cookie-based sessions (`express-session` + `passport`), not JWT
 - The frontend sends cookies via an Angular HTTP interceptor (`withCredentials: true`).
 
 Login identifier:
-- **Username** (not email).
+- **Username or email**.
 
 ## Backend Configuration (.env)
 

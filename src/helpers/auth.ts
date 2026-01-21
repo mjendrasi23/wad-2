@@ -38,28 +38,6 @@ export const users: User[] = []
 // Initialize authentication
 export async function initAuth(app: Express, reset: boolean = false): Promise<void> {
 
-  // Define JSON strategy
-  const { Strategy } = require('passport-json') as any;
-  passport.use(
-  new Strategy(async (username: string, password: string, done: any) => {
-    try {
-      const user = await findUserByUsername(username);
-      
-      if (!user) {
-        return done(null, false, { message: 'User not found' });
-      }
-      
-      if (!verifyPassword(password, user.password_hash || '')) {
-        return done(null, false, { message: 'Invalid password' });
-      }
-      
-      return done(null, user);
-    } catch (err) {
-      return done(err);
-    }
-  })
-);
-
   // Middleware setup with persistent sessions
   const SQLiteStore = SQLiteStoreFactory(session);
   app.use(
@@ -101,6 +79,14 @@ async function findUserByUsername(username: string): Promise<User | undefined> {
     'SELECT * FROM users WHERE username = ?', 
     [username]
   );
+  if (!row) return undefined;
+  return { ...row, roles: [row.role_id] } as User;
+}
+
+async function findUserByLogin(login: string): Promise<User | undefined> {
+  const value = login.trim();
+  if (!value) return undefined;
+  const row = await db.connection!.get('SELECT * FROM users WHERE username = ? OR email = ?', [value, value]);
   if (!row) return undefined;
   return { ...row, roles: [row.role_id] } as User;
 }
@@ -155,19 +141,27 @@ function authResponse(user: User | undefined | null) {
   };
 }
 
-const loginHandler = [
-  passport.authenticate('json'),
-  (req: Request, res: Response) => {
-    const authReq = req as AuthRequest;
-    res.json({
-      message: 'Logged in successfully',
-      ...authResponse(authReq.user ?? null),
-    });
-  },
-] as const;
+function loginHandler(req: Request, res: Response, next: NextFunction): void {
+  (async () => {
+    const { username, password } = req.body ?? {};
+    if (!username || !password) throw new HttpError(400, 'username and password are required');
 
-authRouter.post('', ...loginHandler);
-authRouter.post('/login', ...loginHandler);
+    const user = await findUserByLogin(String(username));
+    if (!user) throw new HttpError(401, 'Invalid credentials');
+    if (!verifyPassword(String(password), String((user as any).password_hash ?? ''))) throw new HttpError(401, 'Invalid credentials');
+
+    (req as any).login(user, (err: any) => {
+      if (err) return next(err);
+      res.json({
+        message: 'Logged in successfully',
+        ...authResponse(user ?? null),
+      });
+    });
+  })().catch(next);
+}
+
+authRouter.post('', loginHandler);
+authRouter.post('/login', loginHandler);
 
 /**
  * @api {delete} /api/auth Logout user

@@ -46,7 +46,6 @@ export class AuthService {
       map(() => ({ ok: true } as const)),
       catchError((e) => {
         const message = this.errors.messageFrom(e) ?? 'Login failed.';
-        this.errors.notifyError(e, 'Login failed.');
         return of({ ok: false, message } as const);
       })
     );
@@ -58,7 +57,6 @@ export class AuthService {
       map(() => ({ ok: true } as const)),
       catchError((e) => {
         const message = this.errors.messageFrom(e) ?? 'Registration failed.';
-        this.errors.notifyError(e, 'Registration failed.');
         return of({ ok: false, message } as const);
       })
     );
