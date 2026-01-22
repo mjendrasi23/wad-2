@@ -32,11 +32,19 @@ export class HttpUploadsApi extends UploadsApi {
   }
 
   uploadRecipeImage(file: File): Observable<string> {
+    return this.uploadToFolder(file, 'recipes');
+  }
+
+  uploadRecipeStepImage(file: File): Observable<string> {
+    return this.uploadToFolder(file, 'steps');
+  }
+
+  private uploadToFolder(file: File, folder: string): Observable<string> {
     const form = new FormData();
     const ext = extensionFromFile(file);
     const name = `recipe_${Date.now()}${ext}`;
     form.set('file', file);
-    form.set('path', 'recipes');
+    form.set('path', folder);
     form.set('name', name);
 
     return this.base.http.post<any>(`${this.base.baseUrl}/upload`, form).pipe(map((r) => publicUploadsUrl(r?.file?.savedAs)));

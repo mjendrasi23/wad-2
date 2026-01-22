@@ -94,11 +94,17 @@
         <mat-card-title>Steps</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <ol class="list">
-          @for (s of recipe.steps; track s) {
-            <li>{{ s }}</li>
+        <div class="steps">
+          @for (s of recipe.steps; track $index) {
+            <section class="steps__section" [class.steps__section--reverse]="$index % 2 === 1" aria-label="Recipe step">
+              <div class="steps__label">{{ stepLabel($index) }}</div>
+              <div class="steps__row">
+                <div class="steps__text">{{ s.text }}</div>
+                <app-recipe-image class="steps__img" [src]="s.imageUrl" [alt]="stepLabel($index)" [crop]="s.imageCrop" [aspectRatio]="'2 / 1'"></app-recipe-image>
+              </div>
+            </section>
           }
-        </ol>
+        </div>
       </mat-card-content>
     </mat-card>
   </div>

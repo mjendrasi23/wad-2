@@ -86,7 +86,7 @@ Base prefix: `APIURL` (default `/api`).
   - 200: recipe row + `ingredients: [{ ingredient_name, quantity, unit }]`, `tags: string[]`, `favoritesCount`, `ratingsCount`
 
 - `POST /api/recipes` (creator/admin)
-  - Accepts the frontend `RecipeUpsert` payload (`categoryId`, `tags`, `ingredients[{text}]`, `steps[]`, `imageUrl`, `imageCrop?`).
+  - Accepts the frontend `RecipeUpsert` payload (`categoryId`, `tags`, `ingredients[{text}]`, `steps[{text,imageUrl?,imageCrop?}]`, `imageUrl`, `imageCrop?`).
   - 201: same shape as `GET /api/recipes/:id`
 
 - `PUT /api/recipes/:id` (owner or manager/admin)

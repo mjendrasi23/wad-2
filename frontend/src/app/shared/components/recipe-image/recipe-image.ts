@@ -45,6 +45,7 @@ export class RecipeImage {
   @Input() alt = '';
   @Input() crop?: ImageCrop;
   @Input() loading: 'lazy' | 'eager' = 'lazy';
+  @Input() aspectRatio = '4 / 3';
 
   get resolvedSrc(): string {
     return resolveBackendAssetUrl(this.src ?? '');

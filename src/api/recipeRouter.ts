@@ -16,9 +16,32 @@ function asStringArray(value: unknown): string[] {
     return [];
 }
 
-function normalizeSteps(steps: unknown): string {
-    if (Array.isArray(steps)) return steps.map(String).map((s) => s.trim()).filter(Boolean).join('\n');
-    return typeof steps === 'string' ? steps : String(steps ?? '');
+type StepItem = { text: string; image_path?: string | null; image_crop?: any };
+
+function normalizeStepItems(steps: unknown): StepItem[] {
+    if (!steps) return [];
+    if (typeof steps === 'string') {
+        const raw = steps.trim();
+        if (!raw) return [];
+        const lines = raw.includes('\n') ? raw.split('\n') : [raw];
+        return lines.map((t) => ({ text: String(t).trim() })).filter((s) => s.text);
+    }
+    if (!Array.isArray(steps)) return [];
+
+    return steps
+        .map((s) => {
+            if (typeof s === 'string') return { text: s.trim() } as StepItem;
+            const text = String((s as any)?.text ?? (s as any)?.body ?? '').trim();
+            const image_path = String((s as any)?.imageUrl ?? (s as any)?.image_path ?? '').trim() || null;
+            const image_crop = (s as any)?.imageCrop ?? (s as any)?.image_crop ?? null;
+            return { text, image_path, image_crop } as StepItem;
+        })
+        .map((s) => ({ ...s, text: String(s.text ?? '').trim() }))
+        .filter((s) => s.text);
+}
+
+function stepsTextFromItems(items: StepItem[]): string {
+    return items.map((s) => s.text).filter(Boolean).join('\n');
 }
 
 function normalizeTags(tags: unknown): string[] {
@@ -87,6 +110,20 @@ function normalizeImageCrop(input: any): { originX: number; originY: number; zoo
         originY: clamp(originY, 0, 100),
         zoom: clamp(zoom, 1, 4),
     };
+}
+
+function stepsJsonFromItems(items: StepItem[]): string | null {
+    if (!items.length) return null;
+    const normalized = items.map((s) => {
+        const crop = normalizeImageCrop(s.image_crop);
+        const image_path = String(s.image_path ?? '').trim() || null;
+        return {
+            text: s.text,
+            image_path,
+            image_crop: crop ?? null,
+        };
+    });
+    return JSON.stringify(normalized);
 }
 
 async function ensureTag(tag_name: string): Promise<number> {
@@ -340,7 +377,9 @@ recipeRouter.post('/', requireRole([1, 2, 3]), async (req: Request, res: Respons
     const { title, description, categoryId, category_id, imageUrl, image_path, imageCrop, image_crop } = req.body ?? {};
     const authUser = (req as any).user;
 
-    const steps = normalizeSteps((req.body ?? {}).steps);
+    const stepItems = normalizeStepItems((req.body ?? {}).steps);
+    const steps = stepsTextFromItems(stepItems);
+    const steps_json = stepsJsonFromItems(stepItems);
     const tags = normalizeTags((req.body ?? {}).tags);
     const ingredients = normalizeIngredients((req.body ?? {}).ingredients);
     const crop = normalizeImageCrop(imageCrop ?? image_crop);
@@ -351,12 +390,13 @@ recipeRouter.post('/', requireRole([1, 2, 3]), async (req: Request, res: Respons
     try {
         const newRecipe = new Recipe(authUser.user_id, title, steps, category_id_final || undefined);
         const added = await db.connection!.get(
-            'INSERT INTO recipes (user_id, title, description, steps, category_id, image_path, image_crop) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *',
+            'INSERT INTO recipes (user_id, title, description, steps, steps_json, category_id, image_path, image_crop) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *',
             [
                 newRecipe.user_id,
                 newRecipe.title,
                 String(description ?? ''),
                 newRecipe.steps,
+                steps_json,
                 newRecipe.category_id,
                 String(imageUrl ?? image_path ?? '') || null,
                 crop ? JSON.stringify(crop) : null,
@@ -374,7 +414,9 @@ recipeRouter.post('/', requireRole([1, 2, 3]), async (req: Request, res: Respons
 
 recipeRouter.put('/:id', requireRole([1, 2, 3]), async (req: Request, res: Response) => {
     const { title, description, categoryId, category_id, imageUrl, image_path, imageCrop, image_crop } = req.body ?? {};
-    const steps = normalizeSteps((req.body ?? {}).steps);
+    const stepItems = normalizeStepItems((req.body ?? {}).steps);
+    const steps = stepsTextFromItems(stepItems);
+    const steps_json = stepsJsonFromItems(stepItems);
     const tags = normalizeTags((req.body ?? {}).tags);
     const ingredients = normalizeIngredients((req.body ?? {}).ingredients);
     const authUser = (req as any).user;
@@ -393,11 +435,12 @@ recipeRouter.put('/:id', requireRole([1, 2, 3]), async (req: Request, res: Respo
     await db.connection!.exec('BEGIN IMMEDIATE');
     try {
         await db.connection!.get(
-            'UPDATE recipes SET title = ?, description = ?, steps = ?, category_id = ?, image_path = ?, image_crop = ?, updated_at = CURRENT_TIMESTAMP WHERE recipe_id = ? RETURNING *',
+            'UPDATE recipes SET title = ?, description = ?, steps = ?, steps_json = ?, category_id = ?, image_path = ?, image_crop = ?, updated_at = CURRENT_TIMESTAMP WHERE recipe_id = ? RETURNING *',
             [
                 title,
                 description,
                 steps,
+                steps_json,
                 category_id_final,
                 String(imageUrl ?? image_path ?? '') || null,
                 crop ? JSON.stringify(crop) : null,

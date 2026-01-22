@@ -132,20 +132,79 @@
       <span class="spacer"></span>
       <button mat-button type="button" (click)="addStep()">
         <mat-icon>add</mat-icon>
-        Add
+        Add step
       </button>
     </mat-card-header>
     <mat-card-content class="panel__content">
-      <div class="rows">
+      <div class="steps">
         @for (ctrl of steps.controls; track $index) {
-          <div class="row">
-            <mat-form-field appearance="outline" class="row__field">
-              <mat-label>Step</mat-label>
-              <textarea matInput rows="2" [formControl]="ctrl"></textarea>
+          <div class="step" [formGroup]="ctrl">
+            <div class="step__header">
+              <div class="step__title">Step {{ $index + 1 }}</div>
+              <button mat-icon-button type="button" aria-label="Remove step" (click)="removeStep($index)" [disabled]="steps.length <= 1">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+
+            <div
+              class="step__img-frame"
+              (pointerdown)="stepCropPointerDown($index, $event)"
+              (pointermove)="stepCropPointerMove($index, $event)"
+              (pointerup)="stepCropPointerUp($index, $event)"
+              (pointercancel)="stepCropPointerUp($index, $event)"
+            >
+              <app-recipe-image
+                class="step__img"
+                [src]="ctrl.controls.imageUrl.value"
+                [alt]="'Step ' + ($index + 1) + ' image'"
+                [crop]="stepCropPreview($index)"
+                [aspectRatio]="'2 / 1'"
+                [loading]="'eager'"
+              ></app-recipe-image>
+              <div class="crop__overlay" aria-hidden="true"></div>
+            </div>
+
+            <div class="step__actions">
+              <input #stepFileInput class="image-actions__file" type="file" accept="image/*" (change)="onStepImageFileSelected($index, $event)" />
+              <button mat-stroked-button type="button" (click)="stepFileInput.click()" [disabled]="uploadingImage">
+                <mat-icon>upload</mat-icon>
+                {{ ctrl.controls.imageUrl.value ? 'Change image' : 'Upload image' }}
+              </button>
+              <button mat-button type="button" (click)="clearStepImage($index)" [disabled]="!ctrl.controls.imageUrl.value">
+                Remove image
+              </button>
+            </div>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Step image URL</mat-label>
+              <input matInput formControlName="imageUrl" placeholder="https://…" />
             </mat-form-field>
-            <button mat-icon-button type="button" aria-label="Remove step" (click)="removeStep($index)">
-              <mat-icon>close</mat-icon>
-            </button>
+
+            <div class="step__zoom" [class.step__zoom--disabled]="!ctrl.controls.imageUrl.value">
+              <span>Zoom</span>
+              <input
+                class="crop__range"
+                type="range"
+                min="1"
+                max="4"
+                step="0.01"
+                [disabled]="!ctrl.controls.imageUrl.value"
+                [value]="ctrl.controls.imageCrop.controls.zoom.value"
+                (input)="setStepZoom($index, $any($event.target).value)"
+              />
+            </div>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Explanation</mat-label>
+              <textarea matInput rows="3" formControlName="text" placeholder="Describe what to do in this step"></textarea>
+              @if (ctrl.controls.text.touched && ctrl.controls.text.invalid) {
+                <mat-error>Step text is required.</mat-error>
+              }
+            </mat-form-field>
+
+            @if (ctrl.controls.imageUrl.touched && ctrl.controls.imageUrl.invalid) {
+              <div class="step__error">Step image is required.</div>
+            }
           </div>
         }
       </div>

@@ -47,6 +47,10 @@ export async function openDb(): Promise<void> {
     if (!hasImageCrop) {
       await db.connection.exec('ALTER TABLE recipes ADD COLUMN image_crop TEXT');
     }
+    const hasStepsJson = recipeCols.some((c) => c.name === 'steps_json');
+    if (!hasStepsJson) {
+      await db.connection.exec('ALTER TABLE recipes ADD COLUMN steps_json TEXT');
+    }
   } catch {
     // Ignore (e.g. DB missing tables until initialized).
   }
@@ -86,6 +90,7 @@ export async function createSchemaAndData(): Promise<void> {
         title TEXT NOT NULL,
         description TEXT,
         steps TEXT NOT NULL,
+        steps_json TEXT,
         image_path TEXT,
         image_crop TEXT,
         average_rating REAL DEFAULT 0.0,

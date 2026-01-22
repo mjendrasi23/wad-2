@@ -8,6 +8,12 @@ export interface ImageCrop {
   zoom: number;
 }
 
+export interface RecipeStep {
+  text: string;
+  imageUrl?: string;
+  imageCrop?: ImageCrop;
+}
+
 export interface Recipe {
   id: string;
   title: string;
@@ -17,7 +23,7 @@ export interface Recipe {
   categoryId: string;
   tags: string[];
   ingredients: RecipeIngredient[];
-  steps: string[];
+  steps: RecipeStep[];
   authorId: string;
   createdAt: string;
   updatedAt: string;
@@ -43,7 +49,7 @@ export interface RecipeListItem {
 
 export interface RecipeDetail extends RecipeListItem {
   ingredients: RecipeIngredient[];
-  steps: string[];
+  steps: RecipeStep[];
   isPublic: boolean;
 }
 
@@ -55,7 +61,7 @@ export interface RecipeUpsert {
   categoryId: string;
   tags: string[];
   ingredients: RecipeIngredient[];
-  steps: string[];
+  steps: RecipeStep[];
   isPublic: boolean;
 }
 

@@ -2,7 +2,7 @@ import { Category } from '../models/category';
 import { Comment } from '../models/comment';
 import { PagedResult } from '../models/paging';
 import { Rating, RatingSummary } from '../models/rating';
-import { ImageCrop, RecipeDetail, RecipeIngredient, RecipeListItem } from '../models/recipe';
+import { ImageCrop, RecipeDetail, RecipeIngredient, RecipeListItem, RecipeStep } from '../models/recipe';
 import { User, UserRole } from '../models/user';
 
 export function roleFromRoleId(roleId: number): UserRole {
@@ -64,6 +64,10 @@ function normalizePublicUrl(input: string): string {
 
 function imageCropFromBackend(row: any): ImageCrop | undefined {
   const raw = row?.image_crop ?? row?.imageCrop ?? row?.image_crop_json;
+  return imageCropFromRaw(raw);
+}
+
+function imageCropFromRaw(raw: any): ImageCrop | undefined {
   if (!raw) return undefined;
 
   let obj: any = raw;
@@ -105,13 +109,43 @@ export function recipeListItemFromBackend(row: any): RecipeListItem {
   };
 }
 
-function splitSteps(steps: string): string[] {
+function splitStepsText(steps: string): string[] {
   const raw = String(steps ?? '').trim();
   if (!raw) return [];
   if (raw.includes('\n')) return raw.split('\n').map((s) => s.trim()).filter(Boolean);
   const numbered = raw.split(/\s*\d+\.\s*/g).map((s) => s.trim()).filter(Boolean);
   if (numbered.length > 1) return numbered;
   return [raw];
+}
+
+function stepsFromBackend(row: any): RecipeStep[] {
+  const stepsJson = row?.steps_json ?? row?.stepsJson;
+  if (stepsJson) {
+    let arr: any = stepsJson;
+    if (typeof stepsJson === 'string') {
+      const s = stepsJson.trim();
+      if (!s) return [];
+      try {
+        arr = JSON.parse(s);
+      } catch {
+        arr = null;
+      }
+    }
+
+    if (Array.isArray(arr)) {
+      return arr
+        .map((it: any) => {
+          const text = String(it?.text ?? '').trim();
+          if (!text) return null;
+          const imageUrl = it?.image_path ? normalizePublicUrl(String(it.image_path)) : undefined;
+          const imageCrop = imageCropFromRaw(it?.image_crop);
+          return { text, imageUrl, imageCrop } satisfies RecipeStep;
+        })
+        .filter(Boolean) as RecipeStep[];
+    }
+  }
+
+  return splitStepsText(row.steps ?? '').map((text) => ({ text }));
 }
 
 export function recipeDetailFromBackend(row: any): RecipeDetail {
@@ -123,7 +157,7 @@ export function recipeDetailFromBackend(row: any): RecipeDetail {
   return {
     ...base,
     ingredients,
-    steps: splitSteps(row.steps ?? ''),
+    steps: stepsFromBackend(row),
     isPublic: true,
   };
 }

@@ -7,5 +7,9 @@ export class MockUploadsApi extends UploadsApi {
   uploadRecipeImage(file: File): Observable<string> {
     return of(URL.createObjectURL(file));
   }
+
+  uploadRecipeStepImage(file: File): Observable<string> {
+    return of(URL.createObjectURL(file));
+  }
 }
 

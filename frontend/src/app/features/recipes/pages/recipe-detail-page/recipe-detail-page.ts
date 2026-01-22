@@ -180,4 +180,9 @@ export class RecipeDetailPage {
     if (comment.authorId === u.id) return true;
     return u.role === 'creator' && recipeAuthorId === u.id;
   }
+
+  stepLabel(index: number): string {
+    if (index === 0) return 'Preparation Step';
+    return `Step ${index}`;
+  }
 }

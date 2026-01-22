@@ -5,7 +5,7 @@ import { shareReplay } from 'rxjs';
 import { CategoriesApi } from '../../../../api/apis/categories-api';
 import { RecipesApi } from '../../../../api/apis/recipes-api';
 import { UploadsApi } from '../../../../api/apis/uploads-api';
-import { ImageCrop, RecipeDetail, RecipeUpsert } from '../../../../api/models/recipe';
+import { ImageCrop, RecipeDetail, RecipeStep, RecipeUpsert } from '../../../../api/models/recipe';
 import { ConfirmService } from '../../../../shared/services/confirm.service';
 
 @Component({
@@ -41,7 +41,7 @@ export class RecipeFormPage {
     tags: this.fb.nonNullable.control(''),
     isPublic: this.fb.nonNullable.control(true),
     ingredients: this.fb.nonNullable.array<IngredientGroup>([]),
-    steps: this.fb.nonNullable.array<FormControl<string>>([]),
+    steps: this.fb.nonNullable.array<StepGroup>([]),
   });
 
   saving = false;
@@ -63,7 +63,7 @@ export class RecipeFormPage {
     return this.form.controls.ingredients;
   }
 
-  get steps(): FormArray<FormControl<string>> {
+  get steps(): FormArray<StepGroup> {
     return this.form.controls.steps;
   }
 
@@ -84,8 +84,8 @@ export class RecipeFormPage {
     this.ingredients.removeAt(idx);
   }
 
-  addStep(value = ''): void {
-    this.steps.push(this.fb.nonNullable.control(value, [Validators.required]));
+  addStep(value?: Partial<RecipeStep>): void {
+    this.steps.push(this.createStepGroup(value));
   }
 
   removeStep(idx: number): void {
@@ -97,6 +97,12 @@ export class RecipeFormPage {
     if (this.form.invalid) return;
 
     const raw = this.form.getRawValue();
+    const steps: RecipeStep[] = (raw.steps || []).map((s: any) => ({
+      text: String(s.text ?? '').trim(),
+      imageUrl: String(s.imageUrl ?? '').trim() || undefined,
+      imageCrop: String(s.imageUrl ?? '').trim() ? this.clampCrop(s.imageCrop) : undefined,
+    }));
+
     const payload: RecipeUpsert = {
       title: raw.title,
       description: raw.description,
@@ -105,7 +111,7 @@ export class RecipeFormPage {
       categoryId: raw.categoryId,
       tags: parseTags(raw.tags),
       ingredients: raw.ingredients,
-      steps: raw.steps,
+      steps,
       isPublic: raw.isPublic,
     };
 
@@ -191,6 +197,111 @@ export class RecipeFormPage {
     this.form.controls.imageCrop.setValue({ originX: 50, originY: 50, zoom: 1 });
   }
 
+  onStepImageFileSelected(stepIndex: number, event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    const file = input?.files?.[0];
+    if (!file) return;
+
+    const step = this.steps.at(stepIndex);
+    if (!step) return;
+
+    this.uploadingImage = true;
+    this.uploadsApi.uploadRecipeStepImage(file).subscribe({
+      next: (url) => {
+        step.controls.imageUrl.setValue(url);
+        step.controls.imageCrop.setValue({ originX: 50, originY: 50, zoom: 1 });
+      },
+      complete: () => {
+        this.uploadingImage = false;
+        if (input) input.value = '';
+      },
+    });
+  }
+
+  clearStepImage(stepIndex: number): void {
+    const step = this.steps.at(stepIndex);
+    if (!step) return;
+    step.controls.imageUrl.setValue('');
+    step.controls.imageCrop.setValue({ originX: 50, originY: 50, zoom: 1 });
+  }
+
+  stepCropPreview(stepIndex: number): ImageCrop {
+    const step = this.steps.at(stepIndex);
+    if (!step) return { originX: 50, originY: 50, zoom: 1 };
+    return this.clampCrop(step.controls.imageCrop.getRawValue());
+  }
+
+  setStepZoom(stepIndex: number, value: unknown): void {
+    const step = this.steps.at(stepIndex);
+    if (!step) return;
+    const zoom = Number(value);
+    if (!Number.isFinite(zoom)) return;
+    step.controls.imageCrop.controls.zoom.setValue(zoom);
+  }
+
+  private stepCropDrag:
+    | {
+        stepIndex: number;
+        pointerId: number;
+        startClientX: number;
+        startClientY: number;
+        startOriginX: number;
+        startOriginY: number;
+        frameWidth: number;
+        frameHeight: number;
+      }
+    | undefined;
+
+  stepCropPointerDown(stepIndex: number, event: PointerEvent): void {
+    const step = this.steps.at(stepIndex);
+    if (!step?.controls.imageUrl.value) return;
+    const el = event.currentTarget as HTMLElement | null;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+
+    const crop = this.stepCropPreview(stepIndex);
+    this.stepCropDrag = {
+      stepIndex,
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startOriginX: crop.originX,
+      startOriginY: crop.originY,
+      frameWidth: rect.width,
+      frameHeight: rect.height,
+    };
+
+    el.setPointerCapture(event.pointerId);
+  }
+
+  stepCropPointerMove(stepIndex: number, event: PointerEvent): void {
+    if (!this.stepCropDrag || this.stepCropDrag.stepIndex !== stepIndex || event.pointerId !== this.stepCropDrag.pointerId) return;
+
+    const step = this.steps.at(stepIndex);
+    if (!step) return;
+
+    const crop = this.stepCropPreview(stepIndex);
+    const zoom = crop.zoom || 1;
+
+    const dx = event.clientX - this.stepCropDrag.startClientX;
+    const dy = event.clientY - this.stepCropDrag.startClientY;
+    const deltaX = (dx / this.stepCropDrag.frameWidth) * 100 * (1 / zoom);
+    const deltaY = (dy / this.stepCropDrag.frameHeight) * 100 * (1 / zoom);
+
+    step.controls.imageCrop.patchValue({
+      originX: this.stepCropDrag.startOriginX - deltaX,
+      originY: this.stepCropDrag.startOriginY - deltaY,
+    });
+  }
+
+  stepCropPointerUp(stepIndex: number, event: PointerEvent): void {
+    if (!this.stepCropDrag || this.stepCropDrag.stepIndex !== stepIndex || event.pointerId !== this.stepCropDrag.pointerId) return;
+    const step = this.steps.at(stepIndex);
+    if (step) step.controls.imageCrop.setValue(this.stepCropPreview(stepIndex));
+    this.stepCropDrag = undefined;
+  }
+
   cropPointerDown(event: PointerEvent): void {
     if (!this.form.controls.imageUrl.value) return;
     const el = event.currentTarget as HTMLElement | null;
@@ -242,6 +353,18 @@ export class RecipeFormPage {
       zoom: clamp(Number(crop.zoom ?? 1), 1, 4),
     };
   }
+
+  private createStepGroup(value?: Partial<RecipeStep>): StepGroup {
+    return this.fb.nonNullable.group({
+      text: this.fb.nonNullable.control(String(value?.text ?? ''), [Validators.required, Validators.maxLength(2000)]),
+      imageUrl: this.fb.nonNullable.control(String(value?.imageUrl ?? ''), [Validators.required]),
+      imageCrop: this.fb.nonNullable.group({
+        originX: this.fb.nonNullable.control(value?.imageCrop?.originX ?? 50),
+        originY: this.fb.nonNullable.control(value?.imageCrop?.originY ?? 50),
+        zoom: this.fb.nonNullable.control(value?.imageCrop?.zoom ?? 1),
+      }),
+    });
+  }
 }
 
 function parseTags(input: string): string[] {
@@ -252,3 +375,8 @@ function parseTags(input: string): string[] {
 }
 
 type IngredientGroup = FormGroup<{ text: FormControl<string> }>;
+type StepGroup = FormGroup<{
+  text: FormControl<string>;
+  imageUrl: FormControl<string>;
+  imageCrop: FormGroup<{ originX: FormControl<number>; originY: FormControl<number>; zoom: FormControl<number> }>;
+}>;
