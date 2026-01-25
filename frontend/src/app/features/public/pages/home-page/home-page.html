@@ -6,13 +6,28 @@
     <form class="hero__search" [formGroup]="searchForm" (ngSubmit)="submitSearch()">
       <mat-form-field appearance="outline" class="hero__field">
         <mat-label>Search recipes</mat-label>
-        <input matInput formControlName="q" placeholder="Try “lemon”, “pasta”, “vegan”…"
-               aria-label="Search recipes" />
+        <input
+          matInput
+          formControlName="q"
+          placeholder="Try lemon, pasta, vegan..."
+          aria-label="Search recipes"
+        />
         <button mat-icon-button matSuffix type="submit" aria-label="Search">
           <mat-icon>search</mat-icon>
         </button>
       </mat-form-field>
     </form>
+
+    <div class="hero__tags">
+      <div class="hero__tags-title">Popular tags</div>
+      <div class="tags tags--hero">
+        @if (popularTags$ | async; as tags) {
+          @for (t of tags; track t) {
+            <a class="tag" [routerLink]="['/recipes']" [queryParams]="{ tags: t }">{{ t }}</a>
+          }
+        }
+      </div>
+    </div>
   </div>
 </section>
 
@@ -32,7 +47,7 @@
               <div class="card__title">{{ r.title }}</div>
               <div class="card__meta">
                 <app-rating-stars [rating]="r.avgRating" [readonly]="true"></app-rating-stars>
-                <span class="dot">•</span>
+                <span class="dot">&bull;</span>
                 <span>{{ r.favoritesCount }} saves</span>
               </div>
               <div class="chips">
@@ -50,42 +65,34 @@
   }
 </section>
 
-<section class="section section--split">
-  <div>
-    <div class="section__header">
-      <h2 class="section__title">Top rated</h2>
-    </div>
-    @if (vm$ | async; as vm) {
-      <div class="grid grid--compact">
-        @for (r of vm.topRated.items; track r.id) {
-          <a class="card" [routerLink]="['/recipes', r.id]">
-            <mat-card>
-              <app-recipe-image [src]="r.imageUrl" [alt]="r.title" [crop]="r.imageCrop"></app-recipe-image>
-              <mat-card-content>
-                <div class="card__title">{{ r.title }}</div>
-                <div class="card__meta">
-                  <app-rating-stars [rating]="r.avgRating" [readonly]="true"></app-rating-stars>
-                  <span class="dot">•</span>
-                  <span>{{ r.ratingsCount }} ratings</span>
-                </div>
-              </mat-card-content>
-            </mat-card>
-          </a>
-        }
-      </div>
-    } @else {
-      <app-skeleton-cards [count]="6"></app-skeleton-cards>
-    }
+<section class="section">
+  <div class="section__header">
+    <h2 class="section__title">Top-rated recipes</h2>
   </div>
-
-  <div>
-    <div class="section__header">
-      <h2 class="section__title">Popular tags</h2>
-    </div>
-    <div class="tags">
-      @for (t of popularTags$ | async; track t) {
-        <a class="tag" [routerLink]="['/recipes']" [queryParams]="{ tags: t }">{{ t }}</a>
+  @if (vm$ | async; as vm) {
+    <div class="grid">
+      @for (r of vm.topRated.items; track r.id) {
+        <a class="card" [routerLink]="['/recipes', r.id]">
+          <mat-card>
+            <app-recipe-image [src]="r.imageUrl" [alt]="r.title" [crop]="r.imageCrop"></app-recipe-image>
+            <mat-card-content>
+              <div class="card__title">{{ r.title }}</div>
+              <div class="card__meta">
+                <app-rating-stars [rating]="r.avgRating" [readonly]="true"></app-rating-stars>
+                <span class="dot">&bull;</span>
+                <span>{{ r.ratingsCount }} ratings</span>
+              </div>
+              <div class="chips">
+                @for (t of r.tags.slice(0, 3); track t) {
+                  <span class="chip">{{ t }}</span>
+                }
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </a>
       }
     </div>
-  </div>
+  } @else {
+    <app-skeleton-cards [count]="6"></app-skeleton-cards>
+  }
 </section>
