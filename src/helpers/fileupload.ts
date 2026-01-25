@@ -60,34 +60,46 @@ uploadRouter.post('/', requireRole([1, 2, 3, 4]), async (req: Request, res: Resp
       return res.status(400).json({ error: 'File upload failed' });
     }
 
-    // The uploaded file (input name="file")
     const uploadedFile = (files.file as File | File[]) || null;
-    // Subfolder path (optional)
-    const uploadSubfolder = sanitizeFilename((fields.path?.[0] as string) || '');
-    // name to use for naming the file
-    const name = sanitizeFilename((fields.name?.[0] as string) || '');
     const file = Array.isArray(uploadedFile) ? uploadedFile[0] : uploadedFile;
-    const backendPath = `${uploadDir}/${uploadSubfolder}/${name}`;
+    
+    const uploadSubfolder = sanitizeFilename((fields.path?.[0] as string) || '');
+    const name = sanitizeFilename((fields.name?.[0] as string) || '');
+
+    const targetDir = `${uploadDir}/${uploadSubfolder}`;
+    const backendPath = `${targetDir}/${name}`;
 
     if (!file) {
       deleteUploadedFile(name, uploadSubfolder);
       return res.json({ message: 'File deleted', filename: backendPath });
     }
 
-    const fileInfo = {
-      originalFilename: file.originalFilename,
-      savedAs: file.filepath,
-      size: file.size,
-      mimeType: file.mimetype,
-    };
+    try {
 
-    fileInfo.savedAs = backendPath;
-    fs.renameSync(file.filepath, fileInfo.savedAs);
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+      }
 
-    return res.json({
-      message: 'File uploaded successfully',
-      file: fileInfo,
-    });
+      const fileInfo = {
+        originalFilename: file.originalFilename,
+        savedAs: backendPath,
+        size: file.size,
+        mimeType: file.mimetype,
+      };
+
+      fs.renameSync(file.filepath, backendPath);
+
+      return res.json({
+        message: 'File uploaded successfully',
+        file: fileInfo,
+      });
+      
+    } catch (renameError) {
+      console.error('File System Error:', renameError);
+      return res.status(500).json({ 
+        error: 'Failed to move file to destination folder. Check folder permissions.' 
+      });
+    }
   });
 });
 
