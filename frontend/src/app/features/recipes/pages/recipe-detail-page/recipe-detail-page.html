@@ -9,7 +9,6 @@
             @if (category$ | async; as cat) {
               <span class="pill">{{ cat?.name ?? 'Category' }}</span>
             }
-            <span class="pill">{{ recipe.views }} views</span>
             <span class="pill">{{ recipe.favoritesCount }} saves</span>
           </div>
         </div>
@@ -104,7 +103,7 @@
         <div class="steps">
           @for (s of recipe.steps; track $index) {
             <section class="steps__section" aria-label="Recipe step">
-              <div class="steps__label">{{ stepLabel($index) }}</div>
+              <div class="steps__label">{{ stepLabel($index+1) }}</div>
               <div class="steps__text">{{ s.text }}</div>
             </section>
           }

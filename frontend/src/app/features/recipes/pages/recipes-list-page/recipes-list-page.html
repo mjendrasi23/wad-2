@@ -117,8 +117,6 @@
                     <app-rating-stars [rating]="r.avgRating" [readonly]="true"></app-rating-stars>
                     <span class="dot">•</span>
                     <span>{{ r.favoritesCount }} saves</span>
-                    <span class="dot">•</span>
-                    <span>{{ r.views }} views</span>
                   </div>
                   <div class="chips">
                     @for (t of r.tags.slice(0, 4); track t) {
@@ -155,13 +153,10 @@
               <td mat-cell *matCellDef="let r">{{ r.favoritesCount }} saves</td>
             </ng-container>
 
-            <ng-container matColumnDef="views">
-              <th mat-header-cell *matHeaderCellDef>Views</th>
-              <td mat-cell *matCellDef="let r">{{ r.views }}</td>
-            </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="['title', 'rating', 'pop', 'views']"></tr>
-            <tr mat-row *matRowDef="let row; columns: ['title', 'rating', 'pop', 'views']"></tr>
+
+            <tr mat-header-row *matHeaderRowDef="['title', 'rating', 'pop']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['title', 'rating', 'pop',]"></tr>
           </table>
         </div>
       }

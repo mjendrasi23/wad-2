@@ -50,11 +50,12 @@
         <input matInput formControlName="tags" placeholder="comma-separated" />
       </mat-form-field>
 
+<div [hidden]="true">
       <mat-form-field appearance="outline">
         <mat-label>Image URL</mat-label>
         <input matInput formControlName="imageUrl" placeholder="https://..." />
       </mat-form-field>
-
+</div>
       <div class="image-actions">
         <input #fileInput class="image-actions__file" type="file" accept="image/*" (change)="onImageFileSelected($event)" />
         <button mat-stroked-button type="button" (click)="fileInput.click()" [disabled]="uploadingImage">
@@ -63,9 +64,10 @@
         </button>
         <button mat-button type="button" (click)="resetCrop()" [disabled]="!form.controls.imageUrl.value">Reset crop</button>
       </div>
+<div [hidden]="true">
 
       <mat-checkbox formControlName="isPublic">Public (guests can view)</mat-checkbox>
-
+</div>
       @if (form.controls.imageUrl.value) {
         <div class="crop">
           <div
