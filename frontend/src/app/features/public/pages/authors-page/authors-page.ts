@@ -8,8 +8,7 @@ import { Component } from '@angular/core';
 })
 export class AuthorsPage {
   readonly authors = [
-    { name: 'Marina Jendrašić', role: 'Student', email: 'marina@example.com' },
-    { name: 'Nurali Zholdassov', role: 'Student', email: 'nurali@example.com' },
-    { name: 'Community', role: 'Recipe Contributors', email: 'community@recipenet.example' },
+    { name: 'Marina Jendrašić', role: 'Student', email: 'mjendrasi23@student.foi.hr' },
+    { name: 'Nurali Zholdassov', role: 'Student', email: 'ul0299107@edu.uni.lodz.pl' },
   ] as const;
 }

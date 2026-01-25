@@ -1,7 +1,9 @@
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+  max-width: 980px;
+  margin: 0;
 }
 
 @media (max-width: 959px) {
@@ -22,15 +24,15 @@
 
 .card__content {
   display: grid;
-  grid-template-columns: 56px 1fr;
-  gap: 12px;
+  grid-template-columns: 72px 1fr;
+  gap: 16px;
   align-items: center;
 }
 
 .avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
   background: linear-gradient(
     135deg,
     color-mix(in srgb, var(--mat-sys-primary) 26%, transparent),
@@ -40,7 +42,7 @@
 }
 
 .name {
-  font: var(--mat-sys-title-medium);
+  font: var(--mat-sys-title-large);
 }
 
 .role {
