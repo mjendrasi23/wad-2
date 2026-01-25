@@ -49,13 +49,18 @@ function sanitizeFilename(name: string): string {
  */
 uploadRouter.post('/', requireRole([1, 2, 3, 4]), async (req: Request, res: Response) => {
   const form = formidable({
-    uploadDir,            // Directory where files are saved
-    keepExtensions: true, // Preserve file extensions
-    multiples: false,     // Single file upload
+    uploadDir,
+    keepExtensions: true,
+    multiples: false,
+    maxFileSize: 500 * 1024, // 512,000 bytes (exactly 500 KB)
   });
 
-  form.parse(req, (err: Error | null, fields: formidable.Fields, files: formidable.Files) => {
+  form.parse(req, (err: any, fields: formidable.Fields, files: formidable.Files) => {
     if (err) {
+      // If the file is too large, Formidable throws an error
+      if (err.code === 1009) { // 1009 is the code for 'maxFileSize exceeded'
+        return res.status(413).json({ error: 'File too large. Max size is 500KB.' });
+      }
       console.error('Error while parsing form:', err);
       return res.status(400).json({ error: 'File upload failed' });
     }
@@ -75,30 +80,23 @@ uploadRouter.post('/', requireRole([1, 2, 3, 4]), async (req: Request, res: Resp
     }
 
     try {
-
       if (!fs.existsSync(targetDir)) {
         fs.mkdirSync(targetDir, { recursive: true });
       }
-
-      const fileInfo = {
-        originalFilename: file.originalFilename,
-        savedAs: backendPath,
-        size: file.size,
-        mimeType: file.mimetype,
-      };
-
       fs.renameSync(file.filepath, backendPath);
 
       return res.json({
         message: 'File uploaded successfully',
-        file: fileInfo,
+        file: {
+          originalFilename: file.originalFilename,
+          savedAs: backendPath,
+          size: file.size,
+          mimeType: file.mimetype,
+        },
       });
       
     } catch (renameError) {
-      console.error('File System Error:', renameError);
-      return res.status(500).json({ 
-        error: 'Failed to move file to destination folder. Check folder permissions.' 
-      });
+      return res.status(500).json({ error: 'File system error' });
     }
   });
 });
