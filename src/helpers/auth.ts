@@ -8,7 +8,7 @@ import { HttpError } from './errors';
 import { reloadUsers } from './sysdb';
 import { db } from "../helpers/db";
 import { hashPassword, verifyPassword } from './password';
-
+import { AuditService } from "../helpers/auditlog"; // Imported the new class
 
 export const authRouter = Router();
 
@@ -147,9 +147,14 @@ function loginHandler(req: Request, res: Response, next: NextFunction): void {
     if (!username || !password) throw new HttpError(400, 'username and password are required');
 
     const user = await findUserByLogin(String(username));
-    if (!user) throw new HttpError(401, 'Invalid credentials');
-    if (!verifyPassword(String(password), String((user as any).password_hash ?? ''))) throw new HttpError(401, 'Invalid credentials');
-
+    if (!user) {
+      await AuditService.log(req, 'LOGIN_FAILURE', 'users', 0, `Failed login attempt for non-existent user: ${username}`);
+      throw new HttpError(401, 'Invalid credentials');
+    }
+    if (!verifyPassword(String(password), String((user as any).password_hash ?? ''))) {
+      await AuditService.log(req, 'LOGIN_FAILURE', 'users', user.user_id, `Failed login attempt (invalid password) for user: ${username}`);
+      throw new HttpError(401, 'Invalid credentials');
+    }
     (req as any).login(user, (err: any) => {
       if (err) return next(err);
       res.json({
@@ -236,6 +241,9 @@ authRouter.post('/register', async (req: Request, res: Response) => {
     await db.connection!.exec('COMMIT');
 
     const user = { ...created, roles: [created.role_id] } as User;
+
+    await AuditService.log(req, 'USER_REGISTER', 'users', created.user_id, `New user registered: ${username} (${email})`);
+    
     (req as any).login(user, (err: any) => {
       if (err) return res.status(500).json({ code: 500, message: 'Login after registration failed' });
       res.status(201).json({ message: 'Registered successfully', ...authResponse(user) });

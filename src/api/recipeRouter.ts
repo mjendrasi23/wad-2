@@ -4,7 +4,7 @@ import { Recipe } from "../model/recipe";
 import { HttpError } from "../helpers/errors";
 import { requireRole } from "../helpers/auth";
 import {streamRecipePDF,FullIngredientDetail} from '../helpers/pdf';
-
+import { AuditService } from "../helpers/auditlog"; // Imported the new class
 
 export const recipeRouter = Router();
 
@@ -395,6 +395,7 @@ recipeRouter.post('/', requireRole([1, 2, 3]), async (req: Request, res: Respons
         await replaceRecipeTags(added.recipe_id, tags);
         await replaceRecipeIngredients(added.recipe_id, ingredients);
         await db.connection!.exec('COMMIT');
+        await AuditService.log(req, 'CREATE_RECIPE', 'recipes', added.recipe_id, `User created a new recipe: ${title}`);
         res.status(201).json(await getRecipeDetail(added.recipe_id));
     } catch (error: any) {
         await db.connection!.exec('ROLLBACK');
@@ -411,13 +412,16 @@ recipeRouter.put('/:id', requireRole([1, 2, 3]), async (req: Request, res: Respo
     const ingredients = normalizeIngredients((req.body ?? {}).ingredients);
     const authUser = (req as any).user;
     const crop = normalizeImageCrop(imageCrop ?? image_crop);
-
+    
     const recipe = await db.connection!.get('SELECT user_id FROM recipes WHERE recipe_id = ?', req.params.id);
     if (!recipe) throw new HttpError(404, 'Recipe not found');
     
     if (recipe.user_id !== authUser.user_id && authUser.role_id !== 1 && authUser.role_id !== 2) {
         throw new HttpError(403, 'Not recipe owner');
     }
+
+    const isOwner = recipe.user_id === authUser.user_id;
+    const isModerator = authUser.role_id === 1 || authUser.role_id === 2;
 
     const categoryIdNum = Number(categoryId ?? category_id);
     const category_id_final = Number.isFinite(categoryIdNum) ? categoryIdNum : null;
@@ -440,6 +444,9 @@ recipeRouter.put('/:id', requireRole([1, 2, 3]), async (req: Request, res: Respo
         await replaceRecipeTags(Number(req.params.id), tags);
         await replaceRecipeIngredients(Number(req.params.id), ingredients);
         await db.connection!.exec('COMMIT');
+        if (isModerator && !isOwner) {
+            await AuditService.log(req, 'MODERATOR_EDIT_RECIPE', 'recipes', recipe.recipe_id, `Moderator updated recipe: ${recipe.title} (Owner ID: ${recipe.user_id})`);
+        }
     } catch (e) {
         await db.connection!.exec('ROLLBACK');
         throw e;
@@ -453,12 +460,21 @@ recipeRouter.delete('/:id', requireRole([1, 2, 3]), async (req: Request, res: Re
     const recipe = await db.connection!.get('SELECT user_id FROM recipes WHERE recipe_id = ?', req.params.id);
     
     if (!recipe) throw new HttpError(404, 'Recipe not found');
+    const isOwner = recipe.user_id === authUser.user_id;
+    const isModerator = authUser.role_id === 1 || authUser.role_id === 2;
     
     if (recipe.user_id !== authUser.user_id && authUser.role_id !== 1 && authUser.role_id !== 2) {
         throw new HttpError(403, 'Not recipe owner');
     }
 
     await db.connection!.run('DELETE FROM recipes WHERE recipe_id = ?', req.params.id);
+
+    const actionType = isModerator && !isOwner ? 'MODERATOR_DELETE_RECIPE' : 'DELETE_RECIPE';
+    const description = isModerator && !isOwner 
+        ? `Moderator deleted recipe "${recipe.title}" (Owner ID: ${recipe.user_id})` 
+        : `User deleted their own recipe: "${recipe.title}"`;
+
+    await AuditService.log(req, actionType, 'recipes', recipe.recipe_id, description);
     res.status(204).send();
 });
 
