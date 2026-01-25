@@ -32,7 +32,7 @@ export async function resetAndSeed() {
 
     await conn.exec(`
       -- 1. ROLES
-      INSERT INTO roles (role_name) VALUES ('Administrator'), ('Management'), ('Regular User'), ('Control User');
+      INSERT INTO roles (role_name) VALUES ('Administrator'), ('Management'), ('User');
 
       -- 2. CATEGORIES
       INSERT INTO categories (name, description) VALUES
@@ -150,17 +150,14 @@ export async function resetAndSeed() {
       (2, 4),
       (3, 5),
       (5, 6);
-
-      //adding photos after the fact
     `);
+
+    await seedRecipeImages(conn);
 
     console.log("Database reset and seeded successfully!");
   } catch (error) {
     console.error("Error seeding database:", error);
   }
-
-  seedRecipeImages(conn);
-
 }
 
 
