@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { db } from "../helpers/db";
 import { HttpError } from "../helpers/errors";
 import { requireRole } from "../helpers/auth";
+import { AuditService } from "../helpers/auditlog"; // Imported the new class
 
 export const metaRouter = Router();
 
@@ -12,6 +13,7 @@ metaRouter.post('/categories', requireRole([1, 2]), async (req: Request, res: Re
             'INSERT INTO categories (name, description) VALUES (?, ?) RETURNING *',
             [name, description]
         );
+        await AuditService.log(req, 'CREATE_CATEGORY', 'categories', result.category_id, `Created category: ${name}`);
         res.status(201).json(result);
     } catch (e: any) {
         throw new HttpError(400, 'Missing required fields or duplicate name');
@@ -47,6 +49,7 @@ metaRouter.put('/categories/:id', requireRole([1, 2]), async (req: Request, res:
         'UPDATE categories SET name = ?, description = ? WHERE category_id = ? RETURNING *',
         [name, description, id]
     );
+    await AuditService.log(req, 'UPDATE_CATEGORY', 'categories', id, `Updated category details for: ${name}`);
     res.json(updated);
 });
 
@@ -55,10 +58,8 @@ metaRouter.delete('/categories/:id', requireRole([1, 2]), async (req: Request, r
     
     const result = await db.connection!.run('DELETE FROM categories WHERE category_id = ?', id);
     
-    if (result.changes === 0) {
-        throw new HttpError(404, 'Category not found');
-    }
-    
+const category = await db.connection!.get('SELECT name FROM categories WHERE category_id = ?', id);
+    if (!category) throw new HttpError(404, 'Category not found');    await AuditService.log(req, 'DELETE_CATEGORY', 'categories', id, `Deleted category: ${category.name}`);
     res.status(204).send();
 });
 
@@ -71,12 +72,14 @@ metaRouter.get('/tags', async (req: Request, res: Response) => {
 metaRouter.post('/tags', requireRole([1, 2]), async (req: Request, res: Response) => {
     const { tag_name } = req.body;
     const result = await db.connection!.get('INSERT INTO tags (tag_name) VALUES (?) RETURNING *', [tag_name]);
+    await AuditService.log(req, 'CREATE_TAG', 'tags', result.tag_id, `Created tag: ${tag_name}`);
     res.status(201).json(result);
 });
 
 metaRouter.delete('/tags/:id', requireRole([1, 2]), async (req: Request, res: Response) => {
     const result = await db.connection!.run('DELETE FROM tags WHERE tag_id = ?', req.params.id);
     if (result.changes === 0) throw new HttpError(404, 'Tag not found');
+    await AuditService.log(req, 'DELETE_TAG', 'tags', req.params.id, `Deleted tag: ${req.params.id}`);
     res.status(204).send();
 });
 
@@ -96,7 +99,7 @@ metaRouter.put('/tags/:id', requireRole([1, 2]), async (req: Request, res: Respo
     if (!updated) {
         throw new HttpError(404, 'Tag not found');
     }
-
+await AuditService.log(req, 'UPDATE_TAG', 'tags', id, `Updated tag name to: ${tag_name}`);
     res.json(updated);
 });
 
@@ -118,6 +121,7 @@ metaRouter.post('/ingredients', requireRole([1, 2]), async (req: Request, res: R
             'INSERT INTO ingredients (ingredient_name) VALUES (?) RETURNING *', 
             [ingredient_name]
         );
+        await AuditService.log(req, 'CREATE_INGREDIENT', 'ingredients', result.ingredient_id, `Added ingredient: ${ingredient_name}`);
         res.status(201).json(result);
     } catch (error: any) {
         throw new HttpError(400, 'Cannot add ingredient: ' + error.message);
@@ -143,6 +147,7 @@ metaRouter.put('/ingredients/:id', requireRole([1, 2]), async (req: Request, res
     );
 
     if (!updated) throw new HttpError(404, 'Ingredient not found');
+    await AuditService.log(req, 'UPDATE_INGREDIENT', 'ingredients', req.params.id, `Updated ingredient name to: ${ingredient_name}`);
     res.json(updated);
 });
 
@@ -152,6 +157,7 @@ metaRouter.delete('/ingredients/:id', requireRole([1, 2]), async (req: Request, 
 
     const deleted = await db.connection!.run('DELETE FROM ingredients WHERE ingredient_id = ?', req.params.id);
     if (deleted.changes === 0) throw new HttpError(404, 'Ingredient not found');
+    await AuditService.log(req, 'DELETE_INGREDIENT', 'ingredients', req.params.id, `Removed ingredient ID: ${req.params.id}`);
     res.status(204).send();
 });
 

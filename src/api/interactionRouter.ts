@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { db } from "../helpers/db";
 import { HttpError } from "../helpers/errors";
 import { requireRole } from "../helpers/auth";
+import { AuditService } from "../helpers/auditlog"; // Imported the new class
 
 export const interactionRouter = Router();
 
@@ -283,6 +284,7 @@ interactionRouter.post('/management/moderation/:reportId/resolve', requireRole([
         [user.user_id, reportId]
     );
     if (!updated) throw new HttpError(404, 'Report not found');
+    await AuditService.log(req, 'RESOLVE_REPORT', 'reports', reportId, `Moderator resolved report #${reportId}`);
     res.json(reportDto(updated));
 });
 
@@ -307,6 +309,14 @@ interactionRouter.post('/management/moderation/:reportId/remove', requireRole([1
              WHERE report_id = ?
              RETURNING *`,
             [user.user_id, reportId]
+        );
+
+        await AuditService.log(
+            req, 
+            'MODERATOR_REMOVE', 
+            report.target_type, 
+            report.target_id, 
+            `Moderator removed ${report.target_type} ID ${report.target_id} via report #${reportId}`
         );
 
         await db.connection!.exec('COMMIT');
@@ -376,6 +386,9 @@ interactionRouter.delete('/comments/:id', requireRole([1, 2, 3, 4]), async (req:
     const comment = await db.connection!.get('SELECT user_id FROM comments WHERE comment_id = ?', [req.params.id]);
     if (!comment) throw new HttpError(404, 'Comment not found');
 
+    const isAuthor = comment.user_id === user.user_id;
+    const isModerator = user.role_id === 1 || user.role_id === 2;
+
     if (comment.user_id !== user.user_id && user.role_id !== 1 && user.role_id !== 2) {
         const recipeOwner = await db.connection!.get(
             `SELECT r.user_id FROM comments c JOIN recipes r ON r.recipe_id = c.recipe_id WHERE c.comment_id = ?`,
@@ -387,12 +400,20 @@ interactionRouter.delete('/comments/:id', requireRole([1, 2, 3, 4]), async (req:
     }
 
     await db.connection!.run('DELETE FROM comments WHERE comment_id = ?', [req.params.id]);
+
+    if (isModerator && !isAuthor) {
+        await AuditService.log(req, 'MODERATOR_DELETE_COMMENT', 'comments', comment.comment_id, `Moderator deleted comment by user ID ${comment.user_id}`);
+    }
     res.status(204).send();
 });
 
 interactionRouter.delete('/rating/:id', requireRole([1, 2, 3, 4]), async (req: Request, res: Response) => {
+    const user = (req as any).user;
     const rating = await db.connection!.get('SELECT user_id FROM ratings WHERE rating_id = ?', req.params.id);
     if (!rating) throw new HttpError(404, 'Rating not found');
+
+    const isAuthor = rating.user_id === user.user_id;
+    const isModerator = user.role_id === 1 || user.role_id === 2;
 
     const authUser = (req as any).user;
     if (authUser.role_id !== 1 && authUser.role_id !== 2 && rating.user_id !== authUser.user_id) {
@@ -400,6 +421,9 @@ interactionRouter.delete('/rating/:id', requireRole([1, 2, 3, 4]), async (req: R
     }
 
     await db.connection!.run('DELETE FROM ratings WHERE rating_id = ?', req.params.id);
+    if (isModerator && !isAuthor) {
+        await AuditService.log(req, 'MODERATOR_DELETE_RATING', 'ratings', rating.rating_id, `Moderator deleted rating ID ${rating.rating_id}`);
+    }
     res.status(204).send();
 });
 

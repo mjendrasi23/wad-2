@@ -3,6 +3,7 @@ import { db } from "../helpers/db";
 import { HttpError } from "../helpers/errors";
 import { requireRole } from "../helpers/auth";
 import { hashPassword } from "../helpers/password";
+import { AuditService } from "../helpers/auditlog"; 
 
 export const adminRouter = Router();
 
@@ -80,24 +81,40 @@ adminRouter.get("/admin/users/:id", requireRole([1]), async (req: Request, res: 
 adminRouter.patch("/admin/users/:id", requireRole([1]), async (req: Request, res: Response) => {
   const role = String(req.body?.role ?? "");
   const role_id = roleIdFromName(role);
+  const targetId = Number(req.params.id);
 
   const updated = await db.connection!.get(
     "UPDATE users SET role_id = ? WHERE user_id = ? RETURNING user_id, username, email, role_id, created_at",
     [role_id, Number(req.params.id)]
   );
   if (!updated) throw new HttpError(404, "User not found");
+  await AuditService.log(
+    req, 
+    'ROLE_UPDATE', 
+    'users', 
+    targetId, 
+    `Administrator updated user ${updated.username} to role: ${role}`
+  );
   res.json(userDto(updated));
 });
 
 adminRouter.post("/admin/users/:id/reset-password", requireRole([1]), async (req: Request, res: Response) => {
   const newPassword = process.env.RESET_PASSWORD || "Password123!";
   const password_hash = hashPassword(newPassword);
+  const targetId = Number(req.params.id);
 
   const updated = await db.connection!.get(
     "UPDATE users SET password_hash = ? WHERE user_id = ? RETURNING user_id",
     [password_hash, Number(req.params.id)]
   );
   if (!updated) throw new HttpError(404, "User not found");
+  await AuditService.log(
+    req, 
+    'PASSWORD_RESET', 
+    'users', 
+    targetId, 
+    `Administrator forced a password reset for user: ${updated.username}`
+  );
   res.status(204).send();
 });
 

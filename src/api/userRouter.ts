@@ -4,6 +4,7 @@ import { User } from "../model/user";
 import { HttpError } from "../helpers/errors";
 import { requireRole } from "../helpers/auth";
 import { hashPassword } from "../helpers/password";
+import { AuditService } from "../helpers/auditlog"; // Imported the new class
 
 export const userRouter = Router();
 
@@ -22,6 +23,7 @@ userRouter.post('/', async (req: Request, res: Response) => {
             newUser.username, newUser.email, newUser.password_hash, newUser.role_id
         );
         await db.connection!.exec('COMMIT');
+        await AuditService.log(req, 'USER_REGISTER', 'users', addedUser.user_id, `New user account created: ${username} (${email})`);
         res.status(201).json(addedUser);
     } catch (error: any) {
         await db.connection!.exec('ROLLBACK');
@@ -46,8 +48,8 @@ userRouter.get('/:id', async (req: Request, res: Response) => {
 userRouter.put('/:id', requireRole([1]), async (req: Request, res: Response) => {
     const { username, email, role_id, is_active } = req.body;
     
-    const userExists = await db.connection!.get('SELECT user_id FROM users WHERE user_id = ?', req.params.id);
-    if (!userExists) {
+    const oldUser = await db.connection!.get('SELECT username, role_id, is_active FROM users WHERE user_id = ?', req.params.id);
+    if (!oldUser) {
         throw new HttpError(404, 'User not found');
     }
 
@@ -59,6 +61,11 @@ userRouter.put('/:id', requireRole([1]), async (req: Request, res: Response) => 
              RETURNING user_id, username, email, role_id, is_active`,
             [username, email, role_id, is_active, req.params.id]
         );
+        let changeDesc = `Admin updated user ${oldUser.username}.`;
+        if (oldUser.role_id !== role_id) changeDesc += ` Role changed to ${role_id}.`;
+        if (oldUser.is_active !== is_active) changeDesc += ` Status changed to ${is_active ? 'Active' : 'Inactive'}.`;
+
+        await AuditService.log(req, 'UPDATE_USER_ADMIN', 'users', req.params.id, changeDesc);
         res.json(updatedUser);
     } catch (error: any) {
         throw new HttpError(400, 'Invalid data format');
@@ -66,11 +73,13 @@ userRouter.put('/:id', requireRole([1]), async (req: Request, res: Response) => 
 });
 
 userRouter.delete('/:id', requireRole([1]), async (req: Request, res: Response) => {
+    const user = await db.connection!.get('SELECT username, email FROM users WHERE user_id = ?', req.params.id);
+    if (!user) throw new HttpError(404, 'User not found');
+
     const result = await db.connection!.run('DELETE FROM users WHERE user_id = ?', req.params.id);
     
-    if (result.changes === 0) {
-        throw new HttpError(404, 'User not found');
-    }
+
+    await AuditService.log(req, 'DELETE_USER', 'users', req.params.id, `Admin permanently deleted user: ${user.username} (${user.email})`);
     
     res.status(204).send();
 });
