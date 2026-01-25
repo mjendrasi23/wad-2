@@ -163,13 +163,13 @@ export class RecipeFormPage {
     });
   }
 
-  onImageFileSelected(event: Event): void {
+  async onImageFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement | null;
     const file = input?.files?.[0];
     if (!file) return;
-
+    const compressedFile = await this.compressImage(file);
     this.uploadingImage = true;
-    this.uploadsApi.uploadRecipeImage(file).subscribe({
+    this.uploadsApi.uploadRecipeImage(compressedFile).subscribe({
       next: (url) => {
         this.form.controls.imageUrl.setValue(url);
         this.resetCrop();
@@ -180,6 +180,46 @@ export class RecipeFormPage {
       },
     });
   }
+
+  private compressImage(file: File): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const maxWidth = 1200;
+        const scale = img.width > maxWidth ? maxWidth / img.width : 1;
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+
+        if (!ctx) return reject('Canvas context failed');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              reject('Blob creation failed');
+            }
+          },
+          'image/jpeg',
+          0.7 
+        );
+      };
+    };
+    reader.onerror = (error) => reject(error);
+  });
+}
 
   get cropPreview(): ImageCrop {
     return this.clampCrop(this.form.controls.imageCrop.getRawValue());

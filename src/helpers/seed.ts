@@ -150,10 +150,51 @@ export async function resetAndSeed() {
       (2, 4),
       (3, 5),
       (5, 6);
+
+      //adding photos after the fact
     `);
 
     console.log("Database reset and seeded successfully!");
   } catch (error) {
     console.error("Error seeding database:", error);
+  }
+
+  seedRecipeImages(conn);
+
+}
+
+
+
+async function seedRecipeImages(conn: any) {
+  const recipeUpdates = [
+    { id: 1, name: 'classic_marinara' },
+    { id: 2, name: 'lemon_garlic_salmon' },
+    { id: 3, name: 'quick_pad_thai' },
+    { id: 4, name: 'lean_turkey_tacos' },
+    { id: 5, name: 'garlic_butter_steak' },
+    { id: 6, name: 'blueberry_overnight_oats' },
+    { id: 7, name: 'roasted_tomato_soup' }
+  ];
+
+  const cropData = JSON.stringify({
+    originX: 50,
+    originY: 49.62388555061524,
+    zoom: 1
+  });
+
+  console.log('Seeding recipe images...');
+
+  try {
+    for (const recipe of recipeUpdates) {
+      const imagePath = `/uploads/recipes/${recipe.name}.jpg`;
+      
+      await conn.run(
+        `UPDATE recipes SET image_path = ?, image_crop = ? WHERE recipe_id = ?`,
+        [imagePath, cropData, recipe.id]
+      );
+    }
+    console.log('Recipe images seeded successfully.');
+  } catch (err) {
+    console.error('Error during image seeding:', err);
   }
 }
