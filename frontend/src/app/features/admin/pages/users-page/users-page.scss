@@ -1,7 +1,12 @@
 .container {
-  height: calc(100vh - 120px);
   border-radius: 16px;
-  border: 1px solid var(--mat-sys-outline-variant);
+  overflow: visible;
+  margin-top: 12px;
+}
+
+:host ::ng-deep .container .mat-drawer-content {
+  height: auto;
+  overflow: visible;
 }
 
 .filters {
@@ -33,10 +38,16 @@
   font: var(--mat-sys-body-small);
 }
 
-.table-wrap {
+.list-container {
   margin-top: 12px;
   border: 1px solid var(--mat-sys-outline-variant);
   border-radius: 16px;
+  overflow: hidden;
+}
+
+.table-wrap {
+  border: 0;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -63,4 +74,18 @@
 
 .role-field {
   width: 160px;
+  margin: 0;
+}
+
+:host ::ng-deep .role-field .mdc-text-field--outlined {
+  border-radius: 14px;
+}
+
+:host ::ng-deep .table .mat-column-role.mat-mdc-cell {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+:host ::ng-deep .table .mat-column-role.mat-mdc-cell .mat-mdc-form-field-subscript-wrapper {
+  display: none;
 }

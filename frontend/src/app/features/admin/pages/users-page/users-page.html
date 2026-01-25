@@ -1,28 +1,28 @@
+<h1 class="page-title">Users</h1>
+<p class="page-subtitle">Admin-only user management with server-side paging and role changes.</p>
+
+<mat-card class="filters">
+  <mat-card-content>
+    <form class="filters__grid" [formGroup]="form">
+      <mat-form-field appearance="outline">
+        <mat-label>Search</mat-label>
+        <input matInput formControlName="search" placeholder="name or email" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Role</mat-label>
+        <mat-select formControlName="role">
+          <mat-option value="">All</mat-option>
+          @for (r of roles; track r) {
+            <mat-option [value]="r">{{ r }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </form>
+  </mat-card-content>
+</mat-card>
+
 <mat-drawer-container class="container" autosize>
   <mat-drawer-content>
-    <h1 class="page-title">Users</h1>
-    <p class="page-subtitle">Admin-only user management with server-side paging and role changes.</p>
-
-    <mat-card class="filters">
-      <mat-card-content>
-        <form class="filters__grid" [formGroup]="form">
-          <mat-form-field appearance="outline">
-            <mat-label>Search</mat-label>
-            <input matInput formControlName="search" placeholder="name or email" />
-          </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>Role</mat-label>
-            <mat-select formControlName="role">
-              <mat-option value="">All</mat-option>
-              @for (r of roles; track r) {
-                <mat-option [value]="r">{{ r }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </form>
-      </mat-card-content>
-    </mat-card>
-
     @if (vm$ | async; as vm) {
       @if (vm.loading) {
         <app-skeleton-cards [count]="6" variant="list"></app-skeleton-cards>
@@ -41,22 +41,23 @@
             ></mat-paginator>
           </div>
 
-          <div class="table-wrap">
-            <table mat-table [dataSource]="vm.result.items" class="table">
-              <ng-container matColumnDef="user">
-                <th mat-header-cell *matHeaderCellDef>User</th>
-                <td mat-cell *matCellDef="let u">
-                  <button class="user" type="button" (click)="openUser(u)">
-                    <div class="user__name">{{ u.name }}</div>
-                    <div class="user__email">{{ u.email }}</div>
-                  </button>
-                </td>
-              </ng-container>
+          <div class="list-container">
+            <div class="table-wrap">
+              <table mat-table [dataSource]="vm.result.items" class="table">
+                <ng-container matColumnDef="user">
+                  <th mat-header-cell *matHeaderCellDef>User</th>
+                  <td mat-cell *matCellDef="let u">
+                    <button class="user" type="button" (click)="openUser(u)">
+                      <div class="user__name">{{ u.name }}</div>
+                      <div class="user__email">{{ u.email }}</div>
+                    </button>
+                  </td>
+                </ng-container>
 
               <ng-container matColumnDef="role">
                 <th mat-header-cell *matHeaderCellDef>Role</th>
                 <td mat-cell *matCellDef="let u">
-                  <mat-form-field appearance="outline" class="role-field">
+                  <mat-form-field appearance="outline" class="role-field" subscriptSizing="dynamic">
                     <mat-select [value]="u.role" (selectionChange)="changeRole(u, $event.value)">
                       @for (r of roles; track r) {
                         <mat-option [value]="r">{{ r }}</mat-option>
@@ -66,14 +67,15 @@
                 </td>
               </ng-container>
 
-              <ng-container matColumnDef="created">
-                <th mat-header-cell *matHeaderCellDef>Created</th>
-                <td mat-cell *matCellDef="let u">{{ u.createdAt | date: 'mediumDate' }}</td>
-              </ng-container>
+                <ng-container matColumnDef="created">
+                  <th mat-header-cell *matHeaderCellDef>Created</th>
+                  <td mat-cell *matCellDef="let u">{{ u.createdAt | date: 'mediumDate' }}</td>
+                </ng-container>
 
-              <tr mat-header-row *matHeaderRowDef="['user', 'role', 'created']"></tr>
-              <tr mat-row *matRowDef="let row; columns: ['user', 'role', 'created']"></tr>
-            </table>
+                <tr mat-header-row *matHeaderRowDef="['user', 'role', 'created']"></tr>
+                <tr mat-row *matRowDef="let row; columns: ['user', 'role', 'created']"></tr>
+              </table>
+            </div>
           </div>
         }
       }

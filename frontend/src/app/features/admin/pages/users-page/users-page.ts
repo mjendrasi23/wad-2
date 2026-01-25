@@ -22,7 +22,7 @@ export class UsersPage {
   private readonly usersApi = inject(UsersApi);
   private readonly confirm = inject(ConfirmService);
 
-  readonly roles: UserRole[] = ['explorer', 'creator', 'manager', 'admin'];
+  readonly roles: UserRole[] = ['creator', 'manager', 'admin'];
 
   readonly form = this.fb.nonNullable.group({
     search: this.fb.nonNullable.control(''),
@@ -71,7 +71,7 @@ export class UsersPage {
     this.confirm
       .open({
         title: 'Change role?',
-        message: `Change ${user.email} to “${role}”?`,
+        message: `Change ${user.email} to \"${role}\"?`,
         confirmText: 'Change',
       })
       .subscribe((ok) => {
