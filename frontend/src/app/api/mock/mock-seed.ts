@@ -2,7 +2,7 @@ import { MockDb } from './mock-db';
 import { createRng, id, nowIso } from './mock-utils';
 import { User, UserPrivate } from '../models/user';
 import { Category } from '../models/category';
-import { ImageCrop, Recipe, RecipeIngredient, RecipeStep } from '../models/recipe';
+import { Recipe, RecipeIngredient, RecipeStep } from '../models/recipe';
 import { Comment } from '../models/comment';
 import { Rating } from '../models/rating';
 import { Favorite } from '../models/favorite';
@@ -105,8 +105,7 @@ function ingredientsFor(title: string, rng: ReturnType<typeof createRng>): Recip
   return [...picks, extra].map((text) => ({ text }));
 }
 
-function stepsFor(seed: string, rng: ReturnType<typeof createRng>): RecipeStep[] {
-  const crop: ImageCrop = { originX: 50, originY: 50, zoom: 1 };
+function stepsFor(rng: ReturnType<typeof createRng>): RecipeStep[] {
   const texts = [
     'Prep ingredients and preheat as needed.',
     'Mix and season until balanced.',
@@ -114,11 +113,7 @@ function stepsFor(seed: string, rng: ReturnType<typeof createRng>): RecipeStep[]
     'Taste and adjust seasoning.',
     'Serve and garnish.',
   ];
-  return texts.slice(0, rng.int(3, 5)).map((text, idx) => ({
-    text,
-    imageUrl: `https://picsum.photos/seed/${seed}-step-${idx + 1}/900/900`,
-    imageCrop: crop,
-  }));
+  return texts.slice(0, rng.int(3, 5)).map((text) => ({ text }));
 }
 
 function seedRecipes(users: User[], categories: Category[]): Recipe[] {
@@ -153,7 +148,7 @@ function seedRecipes(users: User[], categories: Category[]): Recipe[] {
       categoryId: category.id,
       tags: rng.pickMany(TAGS, rng.int(2, 5)),
       ingredients: ingredientsFor(title, rng),
-      steps: stepsFor(`recipe-${i}`, rng),
+      steps: stepsFor(rng),
       authorId: author.id,
       createdAt: now,
       updatedAt: now,

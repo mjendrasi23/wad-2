@@ -22,6 +22,17 @@
             </a>
           }
 
+          <a
+            mat-raised-button
+            color="primary"
+            [href]="recipePdfUrl(recipe.id)"
+            target="_blank"
+            rel="noopener"
+          >
+            <mat-icon>picture_as_pdf</mat-icon>
+            Generate PDF
+          </a>
+
           @if (canInteract$ | async) {
             <button mat-raised-button color="primary" type="button" (click)="toggleFavorite(recipe.id)">
               <mat-icon>{{ (isFavorite$ | async) ? 'favorite' : 'favorite_border' }}</mat-icon>
@@ -34,11 +45,7 @@
             </a>
           }
 
-          <a
-            mat-button
-            routerLink="/reports/new"
-            [queryParams]="{ targetType: 'recipe', targetId: recipe.id }"
-          >
+          <a mat-raised-button color="primary" routerLink="/reports/new" [queryParams]="{ targetType: 'recipe', targetId: recipe.id }">
             <mat-icon>flag</mat-icon>
             Report
           </a>
@@ -89,19 +96,16 @@
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="panel">
+    <mat-card class="panel panel--steps">
       <mat-card-header>
         <mat-card-title>Steps</mat-card-title>
       </mat-card-header>
       <mat-card-content>
         <div class="steps">
           @for (s of recipe.steps; track $index) {
-            <section class="steps__section" [class.steps__section--reverse]="$index % 2 === 1" aria-label="Recipe step">
+            <section class="steps__section" aria-label="Recipe step">
               <div class="steps__label">{{ stepLabel($index) }}</div>
-              <div class="steps__row">
-                <div class="steps__text">{{ s.text }}</div>
-                <app-recipe-image class="steps__img" [src]="s.imageUrl" [alt]="stepLabel($index)" [crop]="s.imageCrop" [aspectRatio]="'2 / 1'"></app-recipe-image>
-              </div>
+              <div class="steps__text">{{ s.text }}</div>
             </section>
           }
         </div>

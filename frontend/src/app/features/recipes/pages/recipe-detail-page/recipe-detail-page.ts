@@ -12,6 +12,7 @@ import { Comment } from '../../../../api/models/comment';
 import { Rating } from '../../../../api/models/rating';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ConfirmService } from '../../../../shared/services/confirm.service';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-recipe-detail-page',
@@ -20,6 +21,8 @@ import { ConfirmService } from '../../../../shared/services/confirm.service';
   styleUrl: './recipe-detail-page.scss',
 })
 export class RecipeDetailPage {
+  private readonly apiBaseUrl = environment.apiBaseUrl.replace(/\/$/, '');
+
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly recipesApi = inject(RecipesApi);
@@ -184,5 +187,9 @@ export class RecipeDetailPage {
   stepLabel(index: number): string {
     if (index === 0) return 'Preparation Step';
     return `Step ${index}`;
+  }
+
+  recipePdfUrl(recipeId: string): string {
+    return `${this.apiBaseUrl}/recipes/${encodeURIComponent(recipeId)}/pdf`;
   }
 }

@@ -117,44 +117,6 @@
   font: var(--mat-sys-title-medium);
 }
 
-.step__img-frame {
-  width: min(320px, 100%);
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid var(--mat-sys-outline-variant);
-  position: relative;
-  cursor: grab;
-  touch-action: none;
-}
-
-.step__img-frame:active {
-  cursor: grabbing;
-}
-
-.step__actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.step__zoom {
-  display: grid;
-  grid-template-columns: 52px 1fr;
-  gap: 10px;
-  align-items: center;
-}
-
-.step__zoom--disabled {
-  opacity: 0.6;
-}
-
-.step__error {
-  color: var(--mat-sys-error);
-  font: var(--mat-sys-body-small);
-  margin-top: -6px;
-}
-
 .rows {
   display: grid;
   gap: 10px;

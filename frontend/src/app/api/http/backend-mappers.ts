@@ -137,9 +137,7 @@ function stepsFromBackend(row: any): RecipeStep[] {
         .map((it: any) => {
           const text = String(it?.text ?? '').trim();
           if (!text) return null;
-          const imageUrl = it?.image_path ? normalizePublicUrl(String(it.image_path)) : undefined;
-          const imageCrop = imageCropFromRaw(it?.image_crop);
-          return { text, imageUrl, imageCrop } satisfies RecipeStep;
+          return { text } satisfies RecipeStep;
         })
         .filter(Boolean) as RecipeStep[];
     }

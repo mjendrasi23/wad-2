@@ -10,8 +10,6 @@ export interface ImageCrop {
 
 export interface RecipeStep {
   text: string;
-  imageUrl?: string;
-  imageCrop?: ImageCrop;
 }
 
 export interface Recipe {

@@ -7,6 +7,8 @@ node_modules
 /data.sqlite3
 /.env
 *.code-workspace
+*-run.log
+*-run.err.log
 .idea/.gitignore
 .idea/modules.xml
 .idea/vcs.xml
