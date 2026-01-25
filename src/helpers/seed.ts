@@ -66,15 +66,15 @@ export async function resetAndSeed() {
       -- 5. RECIPES
       -- Simple Pasta (Admin)
       INSERT INTO recipes (user_id, category_id, title, description, steps)
-      VALUES (1, 2, 'Classic Marinara', 'A simple pasta sauce.', '1. Cook pasta. 2. Add sauce.');
+      VALUES (1, 2, 'Classic Marinara', 'A simple pasta sauce.', '1. Cook pasta.\n 2. Add sauce.');
 
       -- Salmon (jdoe)
       INSERT INTO recipes (user_id, category_id, title, description, steps)
-      VALUES (2, 6, 'Lemon Garlic Salmon', 'Healthy pan-seared salmon.', '1. Season salmon. 2. Sear in pan. 3. Add lemon.');
+      VALUES (2, 6, 'Lemon Garlic Salmon', 'Healthy pan-seared salmon.', '1. Season salmon.\n 2. Sear in pan.\n 3. Add lemon.');
 
       -- Pad Thai (spice_master)
       INSERT INTO recipes (user_id, category_id, title, description, steps)
-      VALUES (5, 8, 'Quick Pad Thai', 'Thai street food.', '1. Soak noodles. 2. Fry shrimp. 3. Toss with soy sauce.');
+      VALUES (5, 8, 'Quick Pad Thai', 'Thai street food.', '1. Soak noodles. \n2. Fry shrimp. \n3. Toss with soy sauce.');
 
       -- 6. RECIPE INGREDIENTS
       INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit) VALUES
@@ -104,19 +104,19 @@ export async function resetAndSeed() {
       -- 2. New Recipes
       -- Turkey Tacos (User 4 - fitness_jane, Category 9 - Mexican)
       INSERT INTO recipes (user_id, category_id, title, description, steps)
-      VALUES (4, 9, 'Lean Turkey Tacos', 'A high-protein, low-fat alternative to beef tacos.', '1. Brown turkey in a skillet. 2. Add seasoning and beans. 3. Serve in warm tortillas with yogurt topping.');
+      VALUES (4, 9, 'Lean Turkey Tacos', 'A high-protein, low-fat alternative to beef tacos.', '1. Brown turkey in a skillet. \n2. Add seasoning and beans.\n 3. Serve in warm tortillas with yogurt topping.');
 
       -- Steak & Potatoes (User 3 - baker_smith, Category 2 - Main Dishes)
       INSERT INTO recipes (user_id, category_id, title, description, steps)
-      VALUES (3, 2, 'Garlic Butter Steak', 'Juicy ribeye with crispy rosemary potatoes.', '1. Cube potatoes and roast with rosemary. 2. Sear steak in butter and garlic for 3 mins per side. 3. Rest and slice.');
+      VALUES (3, 2, 'Garlic Butter Steak', 'Juicy ribeye with crispy rosemary potatoes.', '1. Cube potatoes and roast with rosemary.\n 2. Sear steak in butter and garlic for 3 mins per side. 3. Rest and slice.');
 
       -- Berry Overnight Oats (User 4 - fitness_jane, Category 5 - Vegan)
       INSERT INTO recipes (user_id, category_id, title, description, steps)
-      VALUES (4, 5, 'Blueberry Overnight Oats', 'Perfect meal-prep breakfast.', '1. Mix oats, soy milk, and chia seeds in a jar. 2. Layer with blueberries and maple syrup. 3. Refrigerate overnight.');
+      VALUES (4, 5, 'Blueberry Overnight Oats', 'Perfect meal-prep breakfast.', '1. Mix oats, soy milk, and chia seeds in a jar. \n2. Layer with blueberries and maple syrup.\n 3. Refrigerate overnight.');
 
       -- Tomato Soup (User 1 - admin, Category 4 - Soups)
       INSERT INTO recipes (user_id, category_id, title, description, steps)
-      VALUES (1, 4, 'Roasted Tomato Soup', 'Warm and comforting classic soup.', '1. Roast tomatoes and garlic. 2. Blend until smooth. 3. Simmer with a splash of cream.');
+      VALUES (1, 4, 'Roasted Tomato Soup', 'Warm and comforting classic soup.', '1. Roast tomatoes and garlic. \n2. Blend until smooth. \n3. Simmer with a splash of cream.');
 
       -- 3. Link Ingredients to these New Recipes
       -- Turkey Tacos (Recipe ID 4)

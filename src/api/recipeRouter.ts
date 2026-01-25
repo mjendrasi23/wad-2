@@ -3,6 +3,8 @@ import { db } from "../helpers/db";
 import { Recipe } from "../model/recipe";
 import { HttpError } from "../helpers/errors";
 import { requireRole } from "../helpers/auth";
+import {streamRecipePDF,FullIngredientDetail} from '../helpers/pdf';
+
 
 export const recipeRouter = Router();
 
@@ -211,18 +213,6 @@ async function getRecipeDetail(recipeId: number) {
     };
 }
 
-/* old code
-recipeRouter.get('/', async (req: Request, res: Response) => {
-    const limit = parseInt(req.query.limit as string) || 10;
-    const offset = parseInt(req.query.offset as string) || 0;
-    const search = req.query.q ? `%${req.query.q}%` : '%';
-
-    const recipes = await db.connection!.all(
-        'SELECT * FROM recipes WHERE title LIKE ? OR description LIKE ? LIMIT ? OFFSET ?',
-        [search, search, limit, offset]
-    );
-    res.json(recipes || []);
-*/ 
 recipeRouter.get('/', async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1;
     const pageSize = parseInt(req.query.pageSize as string) || 12;
@@ -498,4 +488,25 @@ recipeRouter.get('/categories/:categoryid', async (req: Request, res: Response) 
         [req.params.categoryid]
     );
     res.json(recipes || []);
+});
+
+recipeRouter.get('/:id/pdf', async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+
+
+  const details = await getRecipeDetail(id); 
+
+  if (!details) return res.status(404).json({ error: "Recipe not found" });
+
+  const recipe = new Recipe(details.user_id, details.title, details.steps);
+  recipe.recipe_id = id;
+
+  const ingredientsList: FullIngredientDetail[] = details.ingredients.map((ing: any) => ({
+    ingredient_name: ing.ingredient_name,
+    quantity: ing.quantity,
+    unit: ing.unit
+  }));
+
+  // 4. Generate
+  streamRecipePDF(recipe, ingredientsList, res);
 });

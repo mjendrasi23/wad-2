@@ -7,3 +7,7 @@ node_modules
 /data.sqlite3
 /.env
 *.code-workspace
+.idea/.gitignore
+.idea/modules.xml
+.idea/vcs.xml
+.idea/wad 2.iml
