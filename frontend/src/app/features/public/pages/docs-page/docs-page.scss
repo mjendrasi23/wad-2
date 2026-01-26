@@ -1,3 +1,68 @@
 .card {
   border-radius: 16px;
 }
+
+.rubric-card {
+  margin-top: 16px;
+}
+
+.section-title {
+  margin: 0 0 12px;
+  font: 600 20px/1.2 Roboto, "Helvetica Neue", sans-serif;
+}
+
+.subsection-title {
+  margin: 18px 0 10px;
+  font: 600 16px/1.2 Roboto, "Helvetica Neue", sans-serif;
+}
+
+.table-wrap {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  overflow: auto;
+  background: #fff;
+}
+
+.rubric-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 760px;
+}
+
+.rubric-table th,
+.rubric-table td {
+  padding: 12px 14px;
+  vertical-align: top;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.rubric-table th:last-child,
+.rubric-table td:last-child {
+  border-right: none;
+}
+
+.rubric-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f7f7fb;
+  z-index: 1;
+  font-weight: 600;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.12);
+}
+
+.rubric-table tbody tr:nth-child(even) td {
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.rubric-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.col-compact {
+  width: 1%;
+  white-space: nowrap;
+  text-align: center;
+}

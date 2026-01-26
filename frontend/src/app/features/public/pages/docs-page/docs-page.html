@@ -43,3 +43,271 @@
     </mat-list>
   </mat-card-content>
 </mat-card>
+
+<mat-card class="card rubric-card">
+  <mat-card-content>
+    <h2 class="section-title">Project evaluation</h2>
+
+    <h3 class="subsection-title">Gating checklist</h3>
+    <div class="table-wrap" role="region" aria-label="Gating checklist table" tabindex="0">
+      <table class="rubric-table">
+        <thead>
+          <tr>
+            <th>Requirement</th>
+            <th class="col-compact">Met (Y/N)</th>
+            <th class="col-compact">Negative points</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Deployed and runnable on spider.foi.hr</td>
+            <td class="col-compact"></td>
+            <td class="col-compact">-20</td>
+            <td>Deployed</td>
+          </tr>
+          <tr>
+            <td>Authentication not present; passwords stored securely (not plain text)</td>
+            <td class="col-compact"></td>
+            <td class="col-compact">-10</td>
+            <td>Implemented</td>
+          </tr>
+          <tr>
+            <td>Role-based authorization enforced on backend API</td>
+            <td class="col-compact"></td>
+            <td class="col-compact">-10</td>
+            <td>Implemented</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="subsection-title">Mandatory assessment</h3>
+    <div class="table-wrap" role="region" aria-label="Mandatory assessment table" tabindex="0">
+      <table class="rubric-table">
+        <thead>
+          <tr>
+            <th>Area</th>
+            <th>Criterion</th>
+            <th class="col-compact">Max points</th>
+            <th class="col-compact">Points</th>
+            <th>Notes / evidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td rowspan="4">System Design &amp; Documentation 15 points (minimum required 5 points)</td>
+            <td>Architecture (frontend/backend/db + integration points)</td>
+            <td class="col-compact">5</td>
+            <td class="col-compact"></td>
+            <td>Implemented</td>
+          </tr>
+          <tr>
+            <td>Data model / ERD + relationships + constraints</td>
+            <td class="col-compact">3</td>
+            <td class="col-compact"></td>
+            <td>Implemented</td>
+          </tr>
+          <tr>
+            <td>Roles &amp; business rules (incl. 2 regular user types)</td>
+            <td class="col-compact">3</td>
+            <td class="col-compact"></td>
+            <td>Already submited</td>
+          </tr>
+          <tr>
+            <td>API documentation (endpoints, auth, errors, examples)</td>
+            <td class="col-compact">4</td>
+            <td class="col-compact"></td>
+            <td>Implemented</td>
+          </tr>
+          <tr>
+            <td rowspan="5">Backend Implementation 35 points (minimum required 5 points)</td>
+            <td>Core entities &amp; CRUD (Users, Categories, Main entities + status history)</td>
+            <td class="col-compact">15</td>
+            <td class="col-compact"></td>
+            <td>Implemented</td>
+          </tr>
+          <tr>
+            <td>Business rules enforced server-side (per roles/types)</td>
+            <td class="col-compact">7</td>
+            <td class="col-compact"></td>
+            <td>Implemented</td>
+          </tr>
+          <tr>
+            <td>Data integrity &amp; validation (mandatory, unique, FK, invalid data blocked)</td>
+            <td class="col-compact">5</td>
+            <td class="col-compact"></td>
+            <td>Implemented</td>
+          </tr>
+          <tr>
+            <td>Security &amp; access control (auth, confirmations, secure passwords)</td>
+            <td class="col-compact">5</td>
+            <td class="col-compact"></td>
+            <td>Implemented</td>
+          </tr>
+          <tr>
+            <td>Error handling + audit logging (who/when for critical actions)</td>
+            <td class="col-compact">3</td>
+            <td class="col-compact"></td>
+            <td>Implemented</td>
+          </tr>
+          <tr>
+            <td rowspan="6">Frontend Implementation (Angular) 35 points (minimum required 5 points)</td>
+            <td>Role-based UI aligned with backend capabilities</td>
+            <td class="col-compact">10</td>
+            <td class="col-compact"></td>
+            <td>Implemented</td>
+          </tr>
+          <tr>
+            <td>Usability, responsiveness, clear error messages</td>
+            <td class="col-compact">8</td>
+            <td class="col-compact"></td>
+            <td>Implemented</td>
+          </tr>
+          <tr>
+            <td>Server-side handling of large data + filtering + sorting</td>
+            <td class="col-compact">6</td>
+            <td class="col-compact"></td>
+            <td>Implemented</td>
+          </tr>
+          <tr>
+            <td>Chart in at least one place about bussines data (not system data e.g. loging)</td>
+            <td class="col-compact">4</td>
+            <td class="col-compact"></td>
+            <td>Implemented</td>
+          </tr>
+          <tr>
+            <td>Angular code quality &amp; standards (services/guards/interceptors)</td>
+            <td class="col-compact">4</td>
+            <td class="col-compact"></td>
+            <td>Implemented</td>
+          </tr>
+          <tr>
+            <td>Integration stability (consistent API use, auth state handling)</td>
+            <td class="col-compact">3</td>
+            <td class="col-compact"></td>
+            <td>Implemented</td>
+          </tr>
+          <tr>
+            <td rowspan="2">Presentation / Demo (mandatory)</td>
+            <td>Clarity &amp; structure</td>
+            <td class="col-compact">7</td>
+            <td class="col-compact"></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Functionality demonstrated (end-to-end scenarios)</td>
+            <td class="col-compact">8</td>
+            <td class="col-compact"></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><strong>TOTAL (mandatory)</strong></td>
+            <td></td>
+            <td class="col-compact"><strong>100</strong></td>
+            <td class="col-compact"></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="subsection-title">Bonus</h3>
+    <div class="table-wrap" role="region" aria-label="Bonus table" tabindex="0">
+      <table class="rubric-table">
+        <thead>
+          <tr>
+            <th>Bonus feature (max 10 points each)</th>
+            <th>Evidence (where/how)</th>
+            <th class="col-compact">Points</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>JWT (access/refresh) or robust session handling (incl. CSRF where applicable)</td>
+            <td></td>
+            <td class="col-compact"></td>
+            <td>not implemented</td>
+          </tr>
+          <tr>
+            <td>PDF report export (e.g., categories, tasks, audit trail)</td>
+            <td>could be found in recipe profiles</td>
+            <td class="col-compact"></td>
+            <td>Implemented</td>
+          </tr>
+          <tr>
+            <td>CAPTCHA / rate limiting / brute-force protection</td>
+            <td></td>
+            <td class="col-compact"></td>
+            <td>not implemented</td>
+          </tr>
+          <tr>
+            <td>TOTP / 2FA</td>
+            <td></td>
+            <td class="col-compact"></td>
+            <td>not implemented</td>
+          </tr>
+          <tr>
+            <td>XSS hardening (sanitization, CSP basics)</td>
+            <td></td>
+            <td class="col-compact"></td>
+            <td>not implemented</td>
+          </tr>
+          <tr>
+            <td>Other relevant, well-integrated improvement (specify) not mentioned previously</td>
+            <td></td>
+            <td class="col-compact"></td>
+            <td>not implemented</td>
+          </tr>
+          <tr>
+            <td><strong>TOTAL (bonus)</strong></td>
+            <td></td>
+            <td class="col-compact"><strong>max 20</strong></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="subsection-title">Final score summary</h3>
+    <div class="table-wrap" role="region" aria-label="Final score summary table" tabindex="0">
+      <table class="rubric-table">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th class="col-compact">Max</th>
+            <th class="col-compact">Awarded</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Mandatory</td>
+            <td class="col-compact">100</td>
+            <td class="col-compact"></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Bonus (capped)</td>
+            <td class="col-compact">20</td>
+            <td class="col-compact"></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Negative points</td>
+            <td class="col-compact">-40</td>
+            <td class="col-compact"></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><strong>TOTAL</strong></td>
+            <td class="col-compact"><strong>100</strong></td>
+            <td class="col-compact"></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </mat-card-content>
+</mat-card>
