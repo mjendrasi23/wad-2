@@ -1,7 +1,7 @@
 <div class="header">
   <div>
     <h1 class="page-title">My recipes</h1>
-    <p class="page-subtitle">Create, edit, and manage your recipes with server-side paging.</p>
+    <p class="page-subtitle">Create, edit, and manage your recipes.</p>
   </div>
   <a mat-raised-button color="primary" routerLink="/recipes/new">
     <mat-icon>add</mat-icon>
@@ -42,7 +42,7 @@
     @if (!vm.result || vm.result.total === 0) {
       <app-empty-state
         title="No recipes yet"
-        message="Create your first recipe to start collecting feedback."
+        message="Create your first recipe."
         icon="post_add"
         primaryActionLabel="Create recipe"
         primaryActionLink="/recipes/new"

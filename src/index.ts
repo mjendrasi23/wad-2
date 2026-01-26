@@ -40,7 +40,7 @@ app.use((req, res, next) => {
 });
 
 // static files (angular app)
-const frontendPath = process.env.FRONTEND || "./frontend/dist/frontend/browser";
+const frontendPath = process.env.FRONTEND || "./frontend/dist/recipe-sharing-network/browser";
 app.use(express.static(frontendPath));
 // static uploaded files
 app.use("/uploads", express.static(process.env.UPLOADSDIR || "./uploads"));
