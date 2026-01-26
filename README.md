@@ -1,49 +1,140 @@
-# Web Application Development
-## version "continuous"
+# Recipe Sharing Web Application
 
-#### Install Angular (v20) tools
+## Full-Stack Node.js & Angular Project
+
+An authentic recipe management system featuring a **Node.js/Express** backend with **SQLite3** and an **Angular** frontend. This project implements a full relational database schema with automated triggers for rating calculations and a paged API for efficient data loading.
+
+---
+
+## 🛠 Prerequisites
+
+Ensure you have **Node.js** (v20+) installed. It is recommended to have the Angular CLI installed globally:
+
 ```bash
 npm install -g @angular/cli@20
+
 ```
-NOTE: from some reasons, it is not recommended to install Angular tools (as `ng`) locally (i.e. among the project files). Global installation (`-g` option) may require administrative rights to the system. On Mac and Linuxes, you should precede the command with `sudo`.
 
-#### Consume this project
+---
 
-##### Clone sources to a local folder
+## 🚀 Getting Started (Development)
+
+### 1. Clone & Install
+
+Clone the repository and install dependencies for both the backend and frontend:
+
 ```bash
-git clone https://gitlab.com/mariusz.jarocki/wad-cont.git
+# Install backend dependencies
+npm install
+
+# Install frontend dependencies
+npm --prefix frontend install
+
 ```
 
-##### Install dependecies for both frontend and backend
+### 2. Configuration
+
+Copy the environment template and customize it if needed (set your `DBFILE` path and server `PORT`):
+
 ```bash
-npm install && npm --prefix frontend install
-```
-##### Configure to your needs (changing default settings)
-Copy `.env-example` to `.env` and customize the second file if needed.
+cp .env-example .env
 
-##### Run both parts of Webapp using development servers
+```
+
+### 3. Run Development Servers
+
+You will need two separate terminal instances:
+
+**Terminal A: Backend (Node.js)**
+
 ```bash
 npm run dev
+
 ```
-in the second terminal
+
+*Runs via `ts-node-dev` on [http://localhost:3000*](https://www.google.com/search?q=http://localhost:3000)
+
+**Terminal B: Frontend (Angular)**
+
 ```bash
 cd frontend
-npm run dev
+npm run start
+
 ```
 
-##### To reinitialize databases
-* stop the backend
-* simply remove `./db/*.sqlite3` files (all or selected)
-* start the backend
+*Runs on [http://localhost:12166*](https://www.google.com/search?q=http://localhost:12166)
 
-##### Enjoy the working Webapp in your browser!
-http://localhost:4200
+---
 
-##### REST API documentation
-[Click here](./API.md)
+## 🏗 Production Deployment
 
-##### ERD diagram
-![ERD](./data-erd.png)
+To run the application in a production-ready state, follow these steps to build the static assets and run the compiled server.
 
-##### Visual component dependencies
-![Visual components](./visual-component-dependencies.drawio.png)
+### 1. Build the Project
+
+This command triggers the frontend build and compiles the TypeScript backend into the `dist/` folder:
+
+```bash
+npm run build
+
+```
+
+### 2. Start the Production Server
+
+Run the compiled JavaScript entry point:
+
+```bash
+npm start
+
+```
+
+---
+
+## 🗄 Database Management
+
+### Initializing the Schema
+
+The database uses `PRAGMA user_version` to track the schema state. If `./db/recipes.sqlite3` is missing, the backend will automatically create the relational schema and set up automated **SQL Triggers**.
+
+### Seeding Data
+
+To populate the database with a diverse set of test recipes, world-cuisine ingredients, and pre-configured users:
+
+```bash
+npm run seed
+
+```
+
+> **Security Note:** All seeded users (e.g., `admin`, `jdoe`) are configured with the password: **`password123`**.
+
+### Hard Reset
+
+1. Stop the backend server.
+2. Delete the `./db/recipes.sqlite3` file.
+3. Restart the backend server.
+
+---
+
+## 📡 API Endpoints
+
+The backend implements a Paged API compatible with the `RecipesListQuery` interface.
+
+* **GET** `/api/recipes`
+* **Query Params:** `page`, `pageSize`, `textSearch`.
+* **Response Format:**
+
+
+```json
+{
+  "items": [ { "recipe_id": 1, "title": "...", "average_rating": 4.5 } ],
+  "total": 12,
+  "page": 1,
+  "pageSize": 10
+}
+
+```
+
+## 👥 Authors
+
+* **Marina Jendrašić,Nurali Zholdassov** - Full Stack Implementation & Database Seeding
+* **Mariusz Jarocki** - Base Project Template & Architecture
